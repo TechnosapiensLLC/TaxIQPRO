@@ -176,7 +176,7 @@ export default function MileageScreen() {
         <View style={styles.headerButtons}>
           <TouchableOpacity
             style={styles.trackButton}
-            onPress={() => router.push('/trip-tracker')}
+            onPress={() => router.push('/auto-trip-tracker')}
           >
             <Ionicons name="navigate" size={20} color="#FFF" />
           </TouchableOpacity>
@@ -226,14 +226,14 @@ export default function MileageScreen() {
           <Ionicons name="car-outline" size={64} color="#2A2A35" />
           <Text style={styles.emptyTitle}>No trips logged</Text>
           <Text style={styles.emptySubtitle}>
-            Track your mileage to maximize your tax deductions
+            Enable auto-tracking to automatically record your trips
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => router.push('/trip-tracker')}
+            onPress={() => router.push('/auto-trip-tracker')}
           >
             <Ionicons name="navigate" size={20} color="#FFF" />
-            <Text style={styles.emptyButtonText}>Start Tracking</Text>
+            <Text style={styles.emptyButtonText}>Enable Auto-Tracking</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.emptyButtonSecondary}
