@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/services/api';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 
 interface MileageEntry {
   id: string;
@@ -27,6 +27,19 @@ interface MileageEntry {
 }
 
 const IRS_MILEAGE_RATE = 0.70;
+
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return 'No date';
+  try {
+    const date = parseISO(dateStr);
+    if (isValid(date)) {
+      return format(date, 'MMM d, yyyy');
+    }
+    return 'Invalid date';
+  } catch {
+    return 'Invalid date';
+  }
+};
 
 export default function MileageScreen() {
   const router = useRouter();
@@ -122,7 +135,7 @@ export default function MileageScreen() {
           </Text>
         </View>
         <Text style={styles.tripDate}>
-          {format(new Date(item.date), 'MMM d, yyyy')}
+          {formatDate(item.date)}
         </Text>
       </View>
 

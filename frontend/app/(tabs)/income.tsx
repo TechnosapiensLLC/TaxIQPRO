@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/services/api';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 
 interface IncomeEntry {
   id: string;
@@ -23,6 +23,19 @@ interface IncomeEntry {
   description: string;
   is_1099: boolean;
 }
+
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return 'No date';
+  try {
+    const date = parseISO(dateStr);
+    if (isValid(date)) {
+      return format(date, 'MMM d, yyyy');
+    }
+    return 'Invalid date';
+  } catch {
+    return 'Invalid date';
+  }
+};
 
 const platformIcons: Record<string, string> = {
   Uber: 'car',
@@ -128,7 +141,7 @@ export default function IncomeScreen() {
           </Text>
         )}
         <Text style={styles.incomeDate}>
-          {format(new Date(item.date), 'MMM d, yyyy')}
+          {formatDate(item.date)}
         </Text>
       </View>
       <View style={styles.incomeAmountContainer}>

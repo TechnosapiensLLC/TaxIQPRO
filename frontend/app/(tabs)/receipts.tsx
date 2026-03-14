@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/services/api';
-import { format } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 
 interface Receipt {
   id: string;
@@ -24,6 +24,19 @@ interface Receipt {
   is_deductible: boolean;
   notes: string;
 }
+
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return 'No date';
+  try {
+    const date = parseISO(dateStr);
+    if (isValid(date)) {
+      return format(date, 'MMM d, yyyy');
+    }
+    return 'Invalid date';
+  } catch {
+    return 'Invalid date';
+  }
+};
 
 export default function ReceiptsScreen() {
   const router = useRouter();
@@ -114,7 +127,7 @@ export default function ReceiptsScreen() {
         </Text>
         <Text style={styles.receiptCategory}>{item.category}</Text>
         <Text style={styles.receiptDate}>
-          {format(new Date(item.date), 'MMM d, yyyy')}
+          {formatDate(item.date)}
         </Text>
       </View>
       <View style={styles.receiptAmountContainer}>
