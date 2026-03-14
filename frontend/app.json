@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Receipt Brain",
-    "slug": "receipt-brain",
+    "name": "TaxIQ Pro",
+    "slug": "taxiq-pro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "receiptbrain",
+    "scheme": "taxiqpro",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
@@ -13,7 +13,10 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Scan receipts to track expenses automatically",
         "NSLocationWhenInUseUsageDescription": "Track mileage for tax deductions",
-        "NSPhotoLibraryUsageDescription": "Upload receipt photos from your gallery"
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Auto-detect trips while driving",
+        "NSPhotoLibraryUsageDescription": "Upload receipt photos from your gallery",
+        "NSMotionUsageDescription": "Detect vehicle motion for automatic trip logging",
+        "NSFaceIDUsageDescription": "Secure login with Face ID"
       }
     },
     "android": {
@@ -26,7 +29,11 @@
         "CAMERA",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "READ_EXTERNAL_STORAGE"
+        "ACCESS_BACKGROUND_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "ACTIVITY_RECOGNITION"
       ]
     },
     "web": {
@@ -54,7 +61,8 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Track mileage for tax deductions"
+          "locationWhenInUsePermission": "Track mileage for tax deductions",
+          "locationAlwaysAndWhenInUsePermission": "Auto-detect trips while driving"
         }
       ]
     ],

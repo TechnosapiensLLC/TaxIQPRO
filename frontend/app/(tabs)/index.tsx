@@ -13,14 +13,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../../src/services/api';
+import { useAuth } from '../../src/context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
+const getAuditRiskLevel = (score: number) => {
+  if (score < 25) return { label: 'Low', color: '#00D9A5' };
+  if (score < 50) return { label: 'Medium', color: '#FFB84D' };
+  if (score < 75) return { label: 'High', color: '#FF8844' };
+  return { label: 'Very High', color: '#FF6B6B' };
+};
+
 export default function DashboardScreen() {
   const router = useRouter();
+  const { user, logout } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Calculate audit risk score (simplified - in production this would be from backend)
+  const calculateAuditRisk = (data: any) => {
+    let risk = 10; // Base risk
+    const totalIncome = data?.total_income || 0;
+    const totalExpenses = data?.total_expenses || 0;
+    const mileageDeduction = data?.total_mileage_deduction || 0;
+    
+    // Risk factors
+    if (totalIncome > 0) {
+      const expenseRatio = (totalExpenses + mileageDeduction) / totalIncome;
+      if (expenseRatio > 0.5) risk += 20; // High expense ratio
+      if (expenseRatio > 0.75) risk += 15; // Very high expense ratio
+    }
+    
+    // Missing documentation penalty
+    const receiptCount = data?.receipts_count || 0;
+    if (receiptCount < 5 && totalExpenses > 500) risk += 15;
+    
+    return Math.min(100, Math.max(0, risk));
+  };
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -42,6 +72,9 @@ export default function DashboardScreen() {
     setRefreshing(true);
     fetchDashboard();
   }, [fetchDashboard]);
+
+  const auditRisk = calculateAuditRisk(dashboard);
+  const riskLevel = getAuditRiskLevel(auditRisk);
 
   if (loading) {
     return (
@@ -71,8 +104,13 @@ export default function DashboardScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>Welcome back!</Text>
-            <Text style={styles.title}>Receipt Brain</Text>
+            <Text style={styles.greeting}>Welcome back, {user?.name || 'there'}!</Text>
+            <View style={styles.logoRow}>
+              <View style={styles.logoIcon}>
+                <Ionicons name="analytics" size={18} color="#00D9A5" />
+              </View>
+              <Text style={styles.title}>TaxIQ Pro</Text>
+            </View>
           </View>
           <TouchableOpacity
             style={styles.coachButton}
@@ -91,7 +129,7 @@ export default function DashboardScreen() {
           <Text style={styles.taxAmount}>
             ${dashboard?.quarterly_payment?.toLocaleString() || '0'}
           </Text>
-          <Text style={styles.taxSubtext}>Next payment due: Q3 2025</Text>
+          <Text style={styles.taxSubtext}>Next payment due: September 15, 2025</Text>
           <View style={styles.taxBreakdown}>
             <View style={styles.breakdownItem}>
               <Text style={styles.breakdownLabel}>Annual Estimate</Text>
@@ -107,6 +145,42 @@ export default function DashboardScreen() {
               </Text>
             </View>
           </View>
+        </View>
+
+        {/* Audit Risk Score - Key Differentiator */}
+        <View style={styles.auditRiskCard}>
+          <View style={styles.auditRiskHeader}>
+            <Ionicons name="shield-checkmark" size={24} color={riskLevel.color} />
+            <Text style={styles.auditRiskTitle}>Audit Risk Score</Text>
+          </View>
+          <View style={styles.auditRiskContent}>
+            <View style={styles.auditRiskGauge}>
+              <Text style={[styles.auditRiskScore, { color: riskLevel.color }]}>
+                {auditRisk}
+              </Text>
+              <Text style={styles.auditRiskMax}>/100</Text>
+            </View>
+            <View style={[styles.auditRiskBadge, { backgroundColor: `${riskLevel.color}20` }]}>
+              <Text style={[styles.auditRiskLabel, { color: riskLevel.color }]}>
+                {riskLevel.label} Risk
+              </Text>
+            </View>
+          </View>
+          <View style={styles.auditRiskBar}>
+            <View 
+              style={[
+                styles.auditRiskFill, 
+                { width: `${auditRisk}%`, backgroundColor: riskLevel.color }
+              ]} 
+            />
+          </View>
+          <Text style={styles.auditRiskTip}>
+            {auditRisk < 30 
+              ? "Your deductions look solid. Keep documenting!"
+              : auditRisk < 60
+              ? "Add more receipt photos to reduce risk."
+              : "Consider reviewing your deductions with a CPA."}
+          </Text>
         </View>
 
         {/* Stats Grid */}
@@ -199,6 +273,19 @@ export default function DashboardScreen() {
           </View>
           <Ionicons name="chevron-forward" size={24} color="#6B6B7B" />
         </TouchableOpacity>
+
+        {/* Export Report CTA */}
+        <TouchableOpacity
+          style={styles.exportCard}
+          onPress={() => router.push('/export-report')}
+        >
+          <Ionicons name="document-text" size={24} color="#7C6BFF" />
+          <View style={styles.exportText}>
+            <Text style={styles.exportTitle}>Generate Tax Report</Text>
+            <Text style={styles.exportSubtitle}>Export for TurboTax, CPA, or IRS</Text>
+          </View>
+          <Ionicons name="download-outline" size={24} color="#7C6BFF" />
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -235,10 +322,24 @@ const styles = StyleSheet.create({
   greeting: {
     color: '#6B6B7B',
     fontSize: 14,
+    marginBottom: 4,
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#00D9A520',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
   },
   coachButton: {
@@ -302,6 +403,68 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
+  },
+  auditRiskCard: {
+    backgroundColor: '#14141A',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#2A2A35',
+  },
+  auditRiskHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  auditRiskTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 10,
+  },
+  auditRiskContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  auditRiskGauge: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  auditRiskScore: {
+    fontSize: 48,
+    fontWeight: '800',
+  },
+  auditRiskMax: {
+    color: '#6B6B7B',
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  auditRiskBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  auditRiskLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  auditRiskBar: {
+    height: 6,
+    backgroundColor: '#1A1A22',
+    borderRadius: 3,
+    marginBottom: 12,
+  },
+  auditRiskFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  auditRiskTip: {
+    color: '#6B6B7B',
+    fontSize: 13,
+    lineHeight: 18,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -407,6 +570,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#FFB84D30',
+    marginBottom: 12,
   },
   coachContent: {
     flexDirection: 'row',
@@ -433,6 +597,29 @@ const styles = StyleSheet.create({
   coachDescription: {
     color: '#6B6B7B',
     fontSize: 13,
+    marginTop: 2,
+  },
+  exportCard: {
+    backgroundColor: '#14141A',
+    borderRadius: 16,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#7C6BFF20',
+  },
+  exportText: {
+    flex: 1,
+    marginLeft: 14,
+  },
+  exportTitle: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  exportSubtitle: {
+    color: '#6B6B7B',
+    fontSize: 12,
     marginTop: 2,
   },
 });

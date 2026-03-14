@@ -5,11 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Linking,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../../src/context/AuthContext';
 
 interface SettingsItem {
   icon: string;
@@ -21,6 +22,18 @@ interface SettingsItem {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: logout },
+      ]
+    );
+  };
 
   const sections = [
     {
@@ -34,16 +47,23 @@ export default function SettingsScreen() {
           onPress: () => router.push('/tax-coach'),
         },
         {
+          icon: 'document-text',
+          label: 'Export Reports',
+          sublabel: 'Schedule C, mileage logs, CPA package',
+          color: '#7C6BFF',
+          onPress: () => router.push('/export-report'),
+        },
+        {
           icon: 'calculator',
           label: 'Quarterly Estimates',
           sublabel: 'View payment schedule',
           color: '#00D9A5',
         },
         {
-          icon: 'document-text',
-          label: 'Tax Reports',
-          sublabel: 'Generate year-end summary',
-          color: '#7C6BFF',
+          icon: 'shield-checkmark',
+          label: 'Audit Risk Analysis',
+          sublabel: 'Review your deduction safety',
+          color: '#FF6B6B',
         },
       ],
     },
@@ -53,8 +73,15 @@ export default function SettingsScreen() {
         {
           icon: 'person',
           label: 'Profile',
-          sublabel: 'Manage your account',
+          sublabel: user?.email || 'Manage your account',
           color: '#6B6B7B',
+        },
+        {
+          icon: 'briefcase',
+          label: 'Profession Settings',
+          sublabel: user?.profession || 'Update your work type',
+          color: '#6B6B7B',
+          onPress: () => router.push('/onboarding'),
         },
         {
           icon: 'link',
@@ -66,6 +93,12 @@ export default function SettingsScreen() {
           icon: 'notifications',
           label: 'Notifications',
           sublabel: 'Tax reminders & alerts',
+          color: '#6B6B7B',
+        },
+        {
+          icon: 'finger-print',
+          label: 'Security',
+          sublabel: 'Biometric login, 2FA',
           color: '#6B6B7B',
         },
       ],
@@ -87,7 +120,7 @@ export default function SettingsScreen() {
         },
         {
           icon: 'star',
-          label: 'Rate Receipt Brain',
+          label: 'Rate TaxIQ Pro',
           sublabel: 'Help us improve',
           color: '#6B6B7B',
         },
@@ -117,7 +150,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>More</Text>
+        <Text style={styles.title}>Settings</Text>
       </View>
 
       <ScrollView
@@ -152,12 +185,22 @@ export default function SettingsScreen() {
           </View>
         ))}
 
+        {/* Sign Out Button */}
+        <TouchableOpacity style={styles.signOutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+
         {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={styles.appName}>Receipt Brain</Text>
+          <View style={styles.appLogoRow}>
+            <Ionicons name="analytics" size={20} color="#00D9A5" />
+            <Text style={styles.appName}>TaxIQ Pro</Text>
+          </View>
+          <Text style={styles.appCompany}>A Technosapiens, LLC Product</Text>
           <Text style={styles.appVersion}>Version 1.0.0</Text>
           <Text style={styles.appCopyright}>
-            © 2025 Receipt Brain. All rights reserved.
+            © 2025 Technosapiens, LLC. All rights reserved.
           </Text>
         </View>
       </ScrollView>
@@ -275,23 +318,51 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
+  signOutButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#14141A',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 24,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#FF6B6B30',
+  },
+  signOutText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   appInfo: {
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: 10,
+  },
+  appLogoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   appName: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
+  },
+  appCompany: {
+    color: '#6B6B7B',
+    fontSize: 12,
+    marginTop: 4,
   },
   appVersion: {
     color: '#6B6B7B',
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: 12,
+    marginTop: 2,
   },
   appCopyright: {
     color: '#4A4A5A',
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 8,
   },
 });
