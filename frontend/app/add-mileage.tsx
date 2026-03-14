@@ -26,16 +26,53 @@ const PURPOSES = [
 
 const IRS_MILEAGE_RATE = 0.70;
 
+interface LocationCoords {
+  lat: number;
+  lng: number;
+}
+
 export default function AddMileageScreen() {
   const router = useRouter();
   const [startLocation, setStartLocation] = useState('');
   const [endLocation, setEndLocation] = useState('');
+  const [startCoords, setStartCoords] = useState<LocationCoords | null>(null);
+  const [endCoords, setEndCoords] = useState<LocationCoords | null>(null);
   const [distance, setDistance] = useState('');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [purpose, setPurpose] = useState('Business');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [calculatingDistance, setCalculatingDistance] = useState(false);
+
+  // Auto-calculate distance when both coordinates are available
+  useEffect(() => {
+    if (startCoords && endCoords) {
+      calculateDistanceFromCoords();
+    }
+  }, [startCoords, endCoords]);
+
+  const calculateDistanceFromCoords = async () => {
+    if (!startCoords || !endCoords) return;
+    
+    setCalculatingDistance(true);
+    try {
+      const result = await api.calculateDistance(
+        startCoords.lat,
+        startCoords.lng,
+        endCoords.lat,
+        endCoords.lng
+      );
+      
+      if (result && result.distance_miles) {
+        setDistance(result.distance_miles.toFixed(1));
+      }
+    } catch (error) {
+      console.error('Error calculating distance:', error);
+    } finally {
+      setCalculatingDistance(false);
+    }
+  };
 
   const getCurrentLocation = async (type: 'start' | 'end') => {
     try {
@@ -47,6 +84,11 @@ export default function AddMileageScreen() {
       }
 
       const location = await Location.getCurrentPositionAsync({});
+      const coords = {
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+      };
+
       const [address] = await Location.reverseGeocodeAsync({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -60,8 +102,10 @@ export default function AddMileageScreen() {
 
       if (type === 'start') {
         setStartLocation(locationString);
+        setStartCoords(coords);
       } else {
         setEndLocation(locationString);
+        setEndCoords(coords);
       }
     } catch (error) {
       Alert.alert('Error', 'Could not get current location');
@@ -223,15 +267,46 @@ export default function AddMileageScreen() {
 
           {/* Distance */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Distance (miles)</Text>
-            <TextInput
-              style={styles.input}
-              value={distance}
-              onChangeText={setDistance}
-              placeholder="0.0"
-              placeholderTextColor="#4A4A5A"
-              keyboardType="decimal-pad"
-            />
+            <View style={styles.distanceHeader}>
+              <Text style={styles.label}>Distance (miles)</Text>
+              {startCoords && endCoords && (
+                <TouchableOpacity
+                  style={styles.recalculateButton}
+                  onPress={calculateDistanceFromCoords}
+                  disabled={calculatingDistance}
+                >
+                  {calculatingDistance ? (
+                    <ActivityIndicator size="small" color="#7C6BFF" />
+                  ) : (
+                    <>
+                      <Ionicons name="refresh" size={14} color="#7C6BFF" />
+                      <Text style={styles.recalculateText}>Recalculate</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.distanceContainer}>
+              <TextInput
+                style={[styles.input, styles.distanceInput]}
+                value={distance}
+                onChangeText={setDistance}
+                placeholder="0.0"
+                placeholderTextColor="#4A4A5A"
+                keyboardType="decimal-pad"
+              />
+              {calculatingDistance && (
+                <View style={styles.calculatingOverlay}>
+                  <ActivityIndicator size="small" color="#00D9A5" />
+                  <Text style={styles.calculatingText}>Calculating...</Text>
+                </View>
+              )}
+            </View>
+            {startCoords && endCoords && distance && (
+              <Text style={styles.distanceHint}>
+                <Ionicons name="checkmark-circle" size={12} color="#00D9A5" /> Auto-calculated from GPS coordinates
+              </Text>
+            )}
           </View>
 
           {/* Date */}
@@ -376,6 +451,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#2A2A35',
+  },
+  distanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  recalculateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: '#7C6BFF15',
+    borderRadius: 8,
+  },
+  recalculateText: {
+    color: '#7C6BFF',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  distanceContainer: {
+    position: 'relative',
+  },
+  distanceInput: {
+    flex: 1,
+  },
+  calculatingOverlay: {
+    position: 'absolute',
+    right: 12,
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  calculatingText: {
+    color: '#00D9A5',
+    fontSize: 12,
+  },
+  distanceHint: {
+    color: '#00D9A5',
+    fontSize: 11,
+    marginTop: 6,
   },
   deductionPreview: {
     flexDirection: 'row',

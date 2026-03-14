@@ -121,6 +121,17 @@ export const api = {
     return response.data;
   },
 
+  // Distance Calculation
+  calculateDistance: async (startLat: number, startLng: number, endLat: number, endLng: number) => {
+    const response = await apiClient.post('/calculate-distance', {
+      start_lat: startLat,
+      start_lng: startLng,
+      end_lat: endLat,
+      end_lng: endLng,
+    });
+    return response.data;
+  },
+
   // ========================================
   // PREMIUM FEATURE 1: Bank Statement Upload
   // ========================================
