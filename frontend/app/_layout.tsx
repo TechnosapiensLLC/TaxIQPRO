@@ -26,6 +26,12 @@ export default function RootLayout() {
           <Stack.Screen name="add-income" options={{ headerShown: false, presentation: 'modal' }} />
           <Stack.Screen name="tax-coach" options={{ headerShown: false, presentation: 'modal' }} />
           <Stack.Screen name="export-report" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="pricing" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="swipe-classify" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="import-csv" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="bank-statement" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="auto-trip" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="notifications" options={{ headerShown: false, presentation: 'modal' }} />
         </Stack>
       </AuthProvider>
     </SafeAreaProvider>
