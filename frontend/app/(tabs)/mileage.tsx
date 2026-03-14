@@ -173,12 +173,20 @@ export default function MileageScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Mileage</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => router.push('/add-mileage')}
-        >
-          <Ionicons name="add" size={24} color="#FFF" />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.trackButton}
+            onPress={() => router.push('/trip-tracker')}
+          >
+            <Ionicons name="navigate" size={20} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => router.push('/add-mileage')}
+          >
+            <Ionicons name="add" size={24} color="#FFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Stats */}
@@ -222,10 +230,17 @@ export default function MileageScreen() {
           </Text>
           <TouchableOpacity
             style={styles.emptyButton}
-            onPress={() => router.push('/add-mileage')}
+            onPress={() => router.push('/trip-tracker')}
           >
             <Ionicons name="navigate" size={20} color="#FFF" />
-            <Text style={styles.emptyButtonText}>Log a Trip</Text>
+            <Text style={styles.emptyButtonText}>Start Tracking</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.emptyButtonSecondary}
+            onPress={() => router.push('/add-mileage')}
+          >
+            <Ionicons name="create-outline" size={18} color="#7C6BFF" />
+            <Text style={styles.emptyButtonSecondaryText}>Add Manually</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -264,6 +279,19 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 28,
     fontWeight: '700',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  trackButton: {
+    backgroundColor: '#00D9A5',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   addButton: {
     backgroundColor: '#7C6BFF',
@@ -333,7 +361,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#7C6BFF',
+    backgroundColor: '#00D9A5',
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -344,6 +372,19 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  emptyButtonSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginTop: 12,
+    gap: 6,
+  },
+  emptyButtonSecondaryText: {
+    color: '#7C6BFF',
+    fontSize: 14,
+    fontWeight: '500',
   },
   listContent: {
     paddingHorizontal: 20,
