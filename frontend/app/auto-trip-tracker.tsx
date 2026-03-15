@@ -193,11 +193,38 @@ export default function AutoTripTrackerScreen() {
   const handleToggleAutoDetect = async (value: boolean) => {
     if (value) {
       const success = await startAutoDetection();
-      if (!success) {
+      if (success) {
+        Alert.alert('Auto-Tracking Enabled', 'Trips will be recorded when you drive above 3 mph. Trip ends after 1 minute of no movement.');
+      } else {
         Alert.alert('Error', 'Could not enable auto-tracking. Please check location permissions.');
       }
     } else {
       await stopAutoDetection();
+    }
+  };
+
+  const handleSimulateTrip = async () => {
+    // Create a simulated trip for testing
+    const now = new Date();
+    const startTime = new Date(now.getTime() - 1800000); // 30 min ago
+    
+    const simulatedTrip = {
+      start_location: 'Current Location (Test)',
+      end_location: 'Destination (Test)',
+      distance: 5.5,
+      purpose: 'Pending',
+      date: format(startTime, 'yyyy-MM-dd'),
+      notes: 'Simulated test trip - 30 min, 25 mph avg',
+    };
+
+    try {
+      await api.createMileage(simulatedTrip);
+      Alert.alert('Test Trip Created!', 'A simulated 5.5 mile trip was added. Check the Mileage tab to see it.', [
+        { text: 'OK', onPress: loadTrips }
+      ]);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create test trip');
+      console.error(error);
     }
   };
 
@@ -309,6 +336,12 @@ export default function AutoTripTrackerScreen() {
             thumbColor={isEnabled ? '#00D9A5' : '#6B6B7B'}
           />
         </View>
+
+        {/* Test Trip Button */}
+        <TouchableOpacity style={styles.testTripButton} onPress={handleSimulateTrip}>
+          <Ionicons name="flask" size={20} color="#FFB84D" />
+          <Text style={styles.testTripButtonText}>Create Test Trip (for testing)</Text>
+        </TouchableOpacity>
 
         {/* Current Trip Indicator */}
         {isTracking && currentTrip && (
@@ -616,6 +649,23 @@ const styles = StyleSheet.create({
     color: '#6B6B7B',
     fontSize: 13,
     marginTop: 2,
+  },
+  testTripButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFB84D20',
+    borderWidth: 1,
+    borderColor: '#FFB84D50',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+    gap: 8,
+  },
+  testTripButtonText: {
+    color: '#FFB84D',
+    fontSize: 14,
+    fontWeight: '600',
   },
   currentTripCard: {
     backgroundColor: '#00D9A515',

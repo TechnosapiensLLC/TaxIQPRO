@@ -6,9 +6,9 @@ import { api } from './api';
 import { format } from 'date-fns';
 
 const IRS_MILEAGE_RATE = 0.70;
-const MOVEMENT_THRESHOLD_MPH = 5;
-const STOP_TIMEOUT_MS = 120000;
-const MIN_TRIP_DISTANCE = 0.1;
+const MOVEMENT_THRESHOLD_MPH = 3; // Lowered for easier testing
+const STOP_TIMEOUT_MS = 60000; // 1 minute of no movement = trip ended (was 2 min)
+const MIN_TRIP_DISTANCE = 0.05; // Lowered minimum miles for testing
 
 export interface RoutePoint {
   latitude: number;
