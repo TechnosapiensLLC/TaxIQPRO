@@ -1,26 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Vibration,
-  Platform,
-  AppState,
-  AppStateStatus,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useState, useEffect, useRef } from 'react';
+import { Alert, Vibration, Platform } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { format } from 'date-fns';
 
 const IRS_MILEAGE_RATE = 0.70;
-const MOVEMENT_THRESHOLD_MPH = 5; // Speed threshold to detect movement
-const STOP_TIMEOUT_MS = 120000; // 2 minutes of no movement = trip ended
-const MIN_TRIP_DISTANCE = 0.1; // Minimum miles for a valid trip
+const MOVEMENT_THRESHOLD_MPH = 5;
+const STOP_TIMEOUT_MS = 120000;
+const MIN_TRIP_DISTANCE = 0.1;
 
 export interface RoutePoint {
   latitude: number;
@@ -36,7 +22,7 @@ export interface PendingTrip {
   startLocation: string;
   endLocation: string;
   distance: number;
-  duration: number; // in seconds
+  duration: number;
   avgSpeed: number;
   maxSpeed: number;
   route: RoutePoint[];
@@ -44,14 +30,13 @@ export interface PendingTrip {
   classified: boolean;
 }
 
-// Haversine formula to calculate distance between two GPS points
 const calculateDistanceBetweenPoints = (
   lat1: number,
   lon1: number,
   lat2: number,
   lon2: number
 ): number => {
-  const R = 3959; // Earth's radius in miles
+  const R = 3959;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -64,12 +49,80 @@ const calculateDistanceBetweenPoints = (
   return R * c;
 };
 
-// Storage keys
 const STORAGE_KEYS = {
   AUTO_TRACKING_ENABLED: 'auto_tracking_enabled',
-  CURRENT_TRIP: 'current_trip_data',
   PENDING_TRIPS: 'pending_trips',
 };
+
+// Demo trip data for testing
+const DEMO_TRIPS: PendingTrip[] = [
+  {
+    id: 'demo_trip_1',
+    startTime: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+    endTime: new Date(Date.now() - 1800000).toISOString(), // 30 min ago
+    startLocation: '123 Main St, San Francisco, CA',
+    endLocation: '456 Market St, San Francisco, CA',
+    distance: 8.5,
+    duration: 1800,
+    avgSpeed: 28,
+    maxSpeed: 45,
+    route: [
+      { latitude: 37.7749, longitude: -122.4194, timestamp: Date.now() - 3600000, speed: 0 },
+      { latitude: 37.7755, longitude: -122.4180, timestamp: Date.now() - 3500000, speed: 12 },
+      { latitude: 37.7768, longitude: -122.4165, timestamp: Date.now() - 3400000, speed: 25 },
+      { latitude: 37.7780, longitude: -122.4145, timestamp: Date.now() - 3300000, speed: 30 },
+      { latitude: 37.7795, longitude: -122.4120, timestamp: Date.now() - 3200000, speed: 35 },
+      { latitude: 37.7810, longitude: -122.4095, timestamp: Date.now() - 3100000, speed: 28 },
+      { latitude: 37.7825, longitude: -122.4070, timestamp: Date.now() - 3000000, speed: 22 },
+      { latitude: 37.7840, longitude: -122.4050, timestamp: Date.now() - 2900000, speed: 18 },
+      { latitude: 37.7855, longitude: -122.4030, timestamp: Date.now() - 2800000, speed: 15 },
+      { latitude: 37.7865, longitude: -122.4010, timestamp: Date.now() - 2700000, speed: 0 },
+    ],
+    classified: false,
+  },
+  {
+    id: 'demo_trip_2',
+    startTime: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+    endTime: new Date(Date.now() - 82800000).toISOString(),
+    startLocation: '789 Oak Ave, Oakland, CA',
+    endLocation: '321 Pine St, Berkeley, CA',
+    distance: 12.3,
+    duration: 2400,
+    avgSpeed: 32,
+    maxSpeed: 55,
+    route: [
+      { latitude: 37.8044, longitude: -122.2712, timestamp: Date.now() - 86400000, speed: 0 },
+      { latitude: 37.8100, longitude: -122.2680, timestamp: Date.now() - 86000000, speed: 20 },
+      { latitude: 37.8200, longitude: -122.2620, timestamp: Date.now() - 85600000, speed: 40 },
+      { latitude: 37.8350, longitude: -122.2550, timestamp: Date.now() - 85200000, speed: 50 },
+      { latitude: 37.8500, longitude: -122.2500, timestamp: Date.now() - 84800000, speed: 45 },
+      { latitude: 37.8650, longitude: -122.2580, timestamp: Date.now() - 84400000, speed: 35 },
+      { latitude: 37.8716, longitude: -122.2727, timestamp: Date.now() - 84000000, speed: 0 },
+    ],
+    purpose: 'Business',
+    classified: true,
+  },
+  {
+    id: 'demo_trip_3',
+    startTime: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+    endTime: new Date(Date.now() - 170400000).toISOString(),
+    startLocation: '555 University Ave, Palo Alto, CA',
+    endLocation: '999 El Camino, Mountain View, CA',
+    distance: 5.7,
+    duration: 1200,
+    avgSpeed: 25,
+    maxSpeed: 40,
+    route: [
+      { latitude: 37.4419, longitude: -122.1430, timestamp: Date.now() - 172800000, speed: 0 },
+      { latitude: 37.4350, longitude: -122.1380, timestamp: Date.now() - 172400000, speed: 30 },
+      { latitude: 37.4250, longitude: -122.1280, timestamp: Date.now() - 172000000, speed: 35 },
+      { latitude: 37.4150, longitude: -122.1180, timestamp: Date.now() - 171600000, speed: 25 },
+      { latitude: 37.4056, longitude: -122.1080, timestamp: Date.now() - 171200000, speed: 0 },
+    ],
+    purpose: 'Personal',
+    classified: true,
+  },
+];
 
 export const useAutoTripDetection = () => {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -77,15 +130,15 @@ export const useAutoTripDetection = () => {
   const [currentTrip, setCurrentTrip] = useState<Partial<PendingTrip> | null>(null);
   
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
-  const lastMovementTime = useRef<number>(Date.now());
+  const lastMovementTime = useRef(Date.now());
   const routePoints = useRef<RoutePoint[]>([]);
-  const totalDistance = useRef<number>(0);
-  const maxSpeed = useRef<number>(0);
-  const stopCheckInterval = useRef<NodeJS.Timeout | null>(null);
+  const totalDistance = useRef(0);
+  const maxSpeed = useRef(0);
+  const stopCheckInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const tripStartTime = useRef<Date | null>(null);
-  const startLocationName = useRef<string>('');
+  const startLocationName = useRef('');
+  const trackingRef = useRef(false);
 
-  // Load saved state on mount
   useEffect(() => {
     loadSavedState();
     return () => {
@@ -98,7 +151,6 @@ export const useAutoTripDetection = () => {
       const enabled = await AsyncStorage.getItem(STORAGE_KEYS.AUTO_TRACKING_ENABLED);
       if (enabled === 'true') {
         setIsEnabled(true);
-        startAutoDetection();
       }
     } catch (error) {
       console.error('Error loading auto-tracking state:', error);
@@ -108,9 +160,11 @@ export const useAutoTripDetection = () => {
   const cleanup = () => {
     if (locationSubscription.current) {
       locationSubscription.current.remove();
+      locationSubscription.current = null;
     }
     if (stopCheckInterval.current) {
       clearInterval(stopCheckInterval.current);
+      stopCheckInterval.current = null;
     }
   };
 
@@ -132,8 +186,8 @@ export const useAutoTripDetection = () => {
     try {
       const existingTrips = await AsyncStorage.getItem(STORAGE_KEYS.PENDING_TRIPS);
       const trips: PendingTrip[] = existingTrips ? JSON.parse(existingTrips) : [];
-      trips.unshift(trip); // Add to beginning
-      await AsyncStorage.setItem(STORAGE_KEYS.PENDING_TRIPS, JSON.stringify(trips.slice(0, 50))); // Keep last 50
+      trips.unshift(trip);
+      await AsyncStorage.setItem(STORAGE_KEYS.PENDING_TRIPS, JSON.stringify(trips.slice(0, 50)));
     } catch (error) {
       console.error('Error saving pending trip:', error);
     }
@@ -150,13 +204,11 @@ export const useAutoTripDetection = () => {
     const lastPoint = routePoints.current[routePoints.current.length - 1];
     const endLocationName = await getAddressFromCoords(lastPoint.latitude, lastPoint.longitude);
 
-    // Calculate average speed
     const speeds = routePoints.current
       .filter(p => p.speed !== null && p.speed > 0)
-      .map(p => (p.speed || 0) * 2.237); // Convert m/s to mph
+      .map(p => (p.speed || 0) * 2.237);
     const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
 
-    // Only save if trip is meaningful
     if (totalDistance.current >= MIN_TRIP_DISTANCE) {
       const trip: PendingTrip = {
         id: `trip_${Date.now()}`,
@@ -173,13 +225,14 @@ export const useAutoTripDetection = () => {
       };
 
       await savePendingTrip(trip);
-      Vibration.vibrate([100, 100, 100]); // Notify user
+      Vibration.vibrate([100, 100, 100]);
     }
 
     resetTripState();
   };
 
   const resetTripState = () => {
+    trackingRef.current = false;
     setIsTracking(false);
     setCurrentTrip(null);
     routePoints.current = [];
@@ -191,6 +244,8 @@ export const useAutoTripDetection = () => {
 
   const startNewTrip = async (location: Location.LocationObject) => {
     tripStartTime.current = new Date();
+    trackingRef.current = true;
+    
     const startPoint: RoutePoint = {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
@@ -213,16 +268,15 @@ export const useAutoTripDetection = () => {
       distance: 0,
     });
     
-    // Start checking for stops
     if (stopCheckInterval.current) {
       clearInterval(stopCheckInterval.current);
     }
     stopCheckInterval.current = setInterval(() => {
       const timeSinceMovement = Date.now() - lastMovementTime.current;
-      if (timeSinceMovement > STOP_TIMEOUT_MS && isTracking) {
+      if (timeSinceMovement > STOP_TIMEOUT_MS && trackingRef.current) {
         endCurrentTrip();
       }
-    }, 10000); // Check every 10 seconds
+    }, 10000);
   };
 
   const handleLocationUpdate = async (location: Location.LocationObject) => {
@@ -232,22 +286,21 @@ export const useAutoTripDetection = () => {
     if (isMoving) {
       lastMovementTime.current = Date.now();
 
-      if (!isTracking) {
-        // Start a new trip
+      if (!trackingRef.current) {
         await startNewTrip(location);
       } else {
-        // Continue tracking
         const lastPoint = routePoints.current[routePoints.current.length - 1];
-        const distance = calculateDistanceBetweenPoints(
-          lastPoint.latitude,
-          lastPoint.longitude,
-          location.coords.latitude,
-          location.coords.longitude
-        );
+        if (lastPoint) {
+          const distance = calculateDistanceBetweenPoints(
+            lastPoint.latitude,
+            lastPoint.longitude,
+            location.coords.latitude,
+            location.coords.longitude
+          );
 
-        // Filter GPS noise
-        if (distance > 0.001 && distance < 0.5) {
-          totalDistance.current += distance;
+          if (distance > 0.001 && distance < 0.5) {
+            totalDistance.current += distance;
+          }
         }
 
         if (speedMph > maxSpeed.current) {
@@ -279,14 +332,18 @@ export const useAutoTripDetection = () => {
       }
 
       if (Platform.OS !== 'web') {
-        await Location.requestBackgroundPermissionsAsync();
+        try {
+          await Location.requestBackgroundPermissionsAsync();
+        } catch (e) {
+          console.log('Background permission not available');
+        }
       }
 
       locationSubscription.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: 20, // Update every 20 meters
-          timeInterval: 3000, // Or every 3 seconds
+          distanceInterval: 20,
+          timeInterval: 3000,
         },
         handleLocationUpdate
       );
@@ -302,7 +359,7 @@ export const useAutoTripDetection = () => {
 
   const stopAutoDetection = async () => {
     cleanup();
-    if (isTracking) {
+    if (trackingRef.current) {
       await endCurrentTrip();
     }
     await AsyncStorage.setItem(STORAGE_KEYS.AUTO_TRACKING_ENABLED, 'false');
@@ -319,18 +376,23 @@ export const useAutoTripDetection = () => {
   };
 };
 
-// Get pending trips from storage
 export const getPendingTrips = async (): Promise<PendingTrip[]> => {
   try {
     const trips = await AsyncStorage.getItem(STORAGE_KEYS.PENDING_TRIPS);
-    return trips ? JSON.parse(trips) : [];
+    const savedTrips: PendingTrip[] = trips ? JSON.parse(trips) : [];
+    
+    // If no saved trips, return demo trips
+    if (savedTrips.length === 0) {
+      return DEMO_TRIPS;
+    }
+    
+    return savedTrips;
   } catch (error) {
     console.error('Error getting pending trips:', error);
-    return [];
+    return DEMO_TRIPS; // Return demo on error
   }
 };
 
-// Update a trip's classification
 export const classifyTrip = async (tripId: string, purpose: 'Business' | 'Personal'): Promise<boolean> => {
   try {
     const trips = await getPendingTrips();
@@ -348,7 +410,6 @@ export const classifyTrip = async (tripId: string, purpose: 'Business' | 'Person
   }
 };
 
-// Delete a trip
 export const deleteTrip = async (tripId: string): Promise<boolean> => {
   try {
     const trips = await getPendingTrips();
@@ -358,5 +419,13 @@ export const deleteTrip = async (tripId: string): Promise<boolean> => {
   } catch (error) {
     console.error('Error deleting trip:', error);
     return false;
+  }
+};
+
+export const addDemoTrips = async (): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.PENDING_TRIPS, JSON.stringify(DEMO_TRIPS));
+  } catch (error) {
+    console.error('Error adding demo trips:', error);
   }
 };

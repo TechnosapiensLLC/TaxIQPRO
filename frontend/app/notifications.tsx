@@ -141,14 +141,6 @@ export default function NotificationSettingsScreen() {
     setPermissionStatus('granted');
     Alert.alert('Reminders Enabled', 'You will receive in-app reminders for tax deadlines.');
   };
-    setPermissionStatus(status);
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permission Denied',
-        'Please enable notifications in your device settings to receive tax reminders.'
-      );
-    }
-  };
 
   const toggleSetting = (id: string) => {
     const setting = settings.find(s => s.id === id);
