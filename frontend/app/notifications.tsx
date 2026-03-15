@@ -13,7 +13,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as Notifications from 'expo-notifications';
 import { useSubscription } from '../src/store/subscriptionStore';
 import { api } from '../src/services/api';
 
@@ -133,12 +132,15 @@ export default function NotificationSettingsScreen() {
   };
 
   const checkNotificationPermissions = async () => {
-    const { status } = await Notifications.getPermissionsAsync();
-    setPermissionStatus(status);
+    // In-app reminder system - no OS permissions needed
+    setPermissionStatus('granted');
   };
 
   const requestPermissions = async () => {
-    const { status } = await Notifications.requestPermissionsAsync();
+    // In-app reminder system - automatically granted
+    setPermissionStatus('granted');
+    Alert.alert('Reminders Enabled', 'You will receive in-app reminders for tax deadlines.');
+  };
     setPermissionStatus(status);
     if (status !== 'granted') {
       Alert.alert(
