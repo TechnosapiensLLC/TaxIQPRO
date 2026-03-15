@@ -123,13 +123,35 @@ export const api = {
 
   // Distance Calculation
   calculateDistance: async (startLat: number, startLng: number, endLat: number, endLng: number) => {
-    const response = await apiClient.post('/calculate-distance', {
-      start_lat: startLat,
-      start_lng: startLng,
-      end_lat: endLat,
-      end_lng: endLng,
-    });
-    return response.data;
+    try {
+      console.log('Calculating distance:', { startLat, startLng, endLat, endLng });
+      const response = await apiClient.post('/calculate-distance', {
+        start_lat: startLat,
+        start_lng: startLng,
+        end_lat: endLat,
+        end_lng: endLng,
+      });
+      console.log('Distance result:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Distance calculation error:', error?.message || error);
+      // Fallback: Calculate using Haversine formula locally
+      const R = 3959; // Earth's radius in miles
+      const dLat = ((endLat - startLat) * Math.PI) / 180;
+      const dLon = ((endLng - startLng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((startLat * Math.PI) / 180) *
+          Math.cos((endLat * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c * 1.3; // Apply road factor
+      return {
+        distance_miles: parseFloat(distance.toFixed(2)),
+        estimated_deduction: parseFloat((distance * 0.70).toFixed(2)),
+      };
+    }
   },
 
   // ========================================

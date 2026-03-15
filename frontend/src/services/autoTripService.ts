@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Alert, Vibration, Platform } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from './api';
+import { format } from 'date-fns';
 
 const IRS_MILEAGE_RATE = 0.70;
 const MOVEMENT_THRESHOLD_MPH = 5;
@@ -184,10 +186,27 @@ export const useAutoTripDetection = () => {
 
   const savePendingTrip = async (trip: PendingTrip) => {
     try {
+      // Save to local storage
       const existingTrips = await AsyncStorage.getItem(STORAGE_KEYS.PENDING_TRIPS);
       const trips: PendingTrip[] = existingTrips ? JSON.parse(existingTrips) : [];
       trips.unshift(trip);
       await AsyncStorage.setItem(STORAGE_KEYS.PENDING_TRIPS, JSON.stringify(trips.slice(0, 50)));
+      
+      // Also save to backend database (as unclassified - purpose will be set later)
+      try {
+        await api.createMileage({
+          start_location: trip.startLocation,
+          end_location: trip.endLocation,
+          distance: trip.distance,
+          purpose: 'Pending', // Will be updated when classified
+          date: format(new Date(trip.startTime), 'yyyy-MM-dd'),
+          notes: `Auto-tracked: ${Math.round(trip.duration / 60)} min, ${trip.avgSpeed.toFixed(0)} mph avg`,
+        });
+        console.log('Trip saved to backend successfully');
+      } catch (apiError) {
+        console.error('Error saving to backend:', apiError);
+        // Trip is still saved locally, user can sync later
+      }
     } catch (error) {
       console.error('Error saving pending trip:', error);
     }
