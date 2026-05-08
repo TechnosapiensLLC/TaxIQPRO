@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Dimensions,
   Modal,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -46,9 +47,17 @@ interface Summary {
   average_premium: number;
   potential_savings_per_gallon: number;
   potential_savings_per_fillup: number;
+  data_source?: string;
+  base_prices?: {
+    regular: number;
+    midgrade: number;
+    premium: number;
+    diesel: number;
+  };
 }
 
 type FuelGrade = 'regular' | 'midgrade' | 'premium' | 'diesel';
+type ViewMode = 'list' | 'map';
 
 const FUEL_GRADES: { key: FuelGrade; label: string; color: string }[] = [
   { key: 'regular', label: 'Regular', color: '#6B6B7B' },
@@ -74,6 +83,7 @@ const BRAND_COLORS: { [key: string]: string } = {
 
 export default function GasFinderScreen() {
   const router = useRouter();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedGrade, setSelectedGrade] = useState<FuelGrade>('premium');
   const [loading, setLoading] = useState(true);
   const [stations, setStations] = useState<GasStation[]>([]);
@@ -105,6 +115,16 @@ export default function GasFinderScreen() {
       const result = await api.getGasStations(lat, lng, 5, selectedGrade);
       setStations(result.stations || []);
       setSummary(result.summary);
+
+      // Center map on user location
+      if (mapRef.current && result.stations?.length > 0) {
+        mapRef.current.animateToRegion({
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        });
+      }
     } catch (error) {
       console.error('Error loading gas stations:', error);
       Alert.alert('Error', 'Could not load gas stations. Please try again.');
@@ -116,6 +136,20 @@ export default function GasFinderScreen() {
   const handleStationPress = (station: GasStation) => {
     setSelectedStation(station);
     setShowPriceModal(true);
+  };
+
+  const openDirections = (station: GasStation) => {
+    const scheme = Platform.select({ ios: 'maps:', android: 'geo:' });
+    const url = Platform.select({
+      ios: `maps:?daddr=${station.latitude},${station.longitude}&dirflg=d`,
+      android: `geo:${station.latitude},${station.longitude}?q=${station.latitude},${station.longitude}(${station.name})`,
+      default: `https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`,
+    });
+    
+    Linking.openURL(url as string).catch(() => {
+      // Fallback to Google Maps web
+      Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`);
+    });
   };
 
   const formatPrice = (price: number) => `$${price.toFixed(2)}`;
@@ -130,6 +164,17 @@ export default function GasFinderScreen() {
     } catch {
       return 'Recently';
     }
+  };
+
+  const getMarkerColor = (station: GasStation): string => {
+    if (!summary) return '#6B6B7B';
+    const price = station.prices[selectedGrade];
+    const cheapest = summary.cheapest_premium;
+    const avg = summary.average_premium;
+    
+    if (price <= cheapest + 0.05) return '#00D9A5'; // Green - cheapest
+    if (price <= avg) return '#FFB84D'; // Yellow - below average
+    return '#FF6B6B'; // Red - above average
   };
 
   const renderStationCard = ({ item }: { item: GasStation }) => {
@@ -187,11 +232,46 @@ export default function GasFinderScreen() {
           </View>
         )}
 
-        <TouchableOpacity style={styles.allPricesButton} onPress={() => handleStationPress(item)}>
-          <Text style={styles.allPricesText}>View All Grades</Text>
-          <Ionicons name="chevron-forward" size={16} color="#7C6BFF" />
-        </TouchableOpacity>
+        <View style={styles.cardActions}>
+          <TouchableOpacity style={styles.allPricesButton} onPress={() => handleStationPress(item)}>
+            <Text style={styles.allPricesText}>All Grades</Text>
+            <Ionicons name="chevron-forward" size={14} color="#7C6BFF" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.directionsSmallButton} onPress={() => openDirections(item)}>
+            <Ionicons name="navigate" size={14} color="#00D9A5" />
+            <Text style={styles.directionsSmallText}>Directions</Text>
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
+    );
+  };
+
+  const renderMapView = () => {
+    // Map view is only available on native devices with react-native-maps
+    // For web preview, show a placeholder
+    return (
+      <View style={styles.mapUnavailable}>
+        <Ionicons name="map-outline" size={48} color="#2A2A35" />
+        <Text style={styles.mapUnavailableText}>Map view available on mobile devices</Text>
+        <Text style={styles.mapUnavailableSubtext}>Open in Expo Go to see the interactive map</Text>
+        <View style={styles.mapStationList}>
+          {stations.slice(0, 5).map((station, index) => {
+            const isCheapest = index === 0;
+            return (
+              <TouchableOpacity 
+                key={station.id} 
+                style={styles.mapListItem}
+                onPress={() => handleStationPress(station)}
+              >
+                <View style={[styles.mapListDot, { backgroundColor: isCheapest ? '#00D9A5' : '#6B6B7B' }]} />
+                <Text style={styles.mapListName} numberOfLines={1}>{station.name}</Text>
+                <Text style={styles.mapListPrice}>{formatPrice(station.prices[selectedGrade])}</Text>
+                <Text style={styles.mapListDistance}>{station.distance_miles} mi</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
     );
   };
 
@@ -210,7 +290,7 @@ export default function GasFinderScreen() {
           activeOpacity={1} 
           onPress={() => setShowPriceModal(false)}
         >
-          <View style={styles.modalContent}>
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
             <View style={styles.modalHandle} />
             
             <View style={styles.modalHeader}>
@@ -225,15 +305,29 @@ export default function GasFinderScreen() {
             <Text style={styles.allPricesTitle}>All Fuel Grades</Text>
             
             <View style={styles.priceGrid}>
-              {FUEL_GRADES.map((grade) => (
-                <View key={grade.key} style={styles.priceGridItem}>
-                  <View style={[styles.gradeIndicator, { backgroundColor: grade.color }]} />
-                  <Text style={styles.gradeName}>{grade.label}</Text>
-                  <Text style={styles.gradePrice}>
-                    {formatPrice(selectedStation.prices[grade.key])}
-                  </Text>
-                </View>
-              ))}
+              {FUEL_GRADES.map((grade) => {
+                const isSelected = selectedGrade === grade.key;
+                const isCheapestGrade = summary?.base_prices && 
+                  selectedStation.prices[grade.key] <= (summary.base_prices[grade.key] || 999);
+                
+                return (
+                  <View key={grade.key} style={[
+                    styles.priceGridItem,
+                    isSelected && styles.priceGridItemSelected
+                  ]}>
+                    <View style={[styles.gradeIndicator, { backgroundColor: grade.color }]} />
+                    <Text style={styles.gradeName}>{grade.label}</Text>
+                    <Text style={styles.gradePrice}>
+                      {formatPrice(selectedStation.prices[grade.key])}
+                    </Text>
+                    {isCheapestGrade && (
+                      <View style={styles.belowAvgBadge}>
+                        <Text style={styles.belowAvgText}>Below avg</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
             </View>
 
             <View style={styles.amenitiesSection}>
@@ -252,13 +346,16 @@ export default function GasFinderScreen() {
               <Text style={styles.updateText}>
                 Updated {getTimeSinceUpdate(selectedStation.last_updated)}
               </Text>
+              {summary?.data_source && (
+                <Text style={styles.dataSourceText}> • {summary.data_source}</Text>
+              )}
             </View>
 
             <TouchableOpacity 
               style={styles.directionsButton}
               onPress={() => {
                 setShowPriceModal(false);
-                Alert.alert('Navigation', `Opening directions to ${selectedStation.name}`);
+                openDirections(selectedStation);
               }}
             >
               <Ionicons name="navigate" size={20} color="#FFF" />
@@ -294,7 +391,7 @@ export default function GasFinderScreen() {
               Save up to ${summary.potential_savings_per_fillup.toFixed(2)} per fill-up
             </Text>
             <Text style={styles.savingsSubtitle}>
-              Cheapest Premium: {formatPrice(summary.cheapest_premium)} • Avg: {formatPrice(summary.average_premium)}
+              Cheapest: {formatPrice(summary.cheapest_premium)} • Avg: {formatPrice(summary.average_premium)}
             </Text>
           </View>
         </View>
@@ -323,10 +420,23 @@ export default function GasFinderScreen() {
         ))}
       </ScrollView>
 
-      {/* Station Count */}
-      <View style={styles.countRow}>
-        <Ionicons name="location" size={16} color="#6B6B7B" />
-        <Text style={styles.stationCount}>{stations.length} stations near you</Text>
+      {/* View Toggle */}
+      <View style={styles.viewToggle}>
+        <TouchableOpacity
+          style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
+          onPress={() => setViewMode('list')}
+        >
+          <Ionicons name="list" size={18} color={viewMode === 'list' ? '#FFF' : '#6B6B7B'} />
+          <Text style={[styles.toggleText, viewMode === 'list' && styles.toggleTextActive]}>List</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toggleButton, viewMode === 'map' && styles.toggleButtonActive]}
+          onPress={() => setViewMode('map')}
+        >
+          <Ionicons name="map" size={18} color={viewMode === 'map' ? '#FFF' : '#6B6B7B'} />
+          <Text style={[styles.toggleText, viewMode === 'map' && styles.toggleTextActive]}>Map</Text>
+        </TouchableOpacity>
+        <Text style={styles.stationCount}>{stations.length} stations</Text>
       </View>
 
       {/* Content */}
@@ -335,7 +445,7 @@ export default function GasFinderScreen() {
           <ActivityIndicator size="large" color="#00D9A5" />
           <Text style={styles.loadingText}>Finding gas stations near you...</Text>
         </View>
-      ) : (
+      ) : viewMode === 'list' ? (
         <FlatList
           data={stations}
           keyExtractor={(item) => item.id}
@@ -343,6 +453,8 @@ export default function GasFinderScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
+      ) : (
+        renderMapView()
       )}
 
       <PriceModal />
@@ -365,8 +477,12 @@ const styles = StyleSheet.create({
   gradeDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
   gradeButtonText: { color: '#6B6B7B', fontSize: 13, fontWeight: '500' },
   gradeButtonTextActive: { color: '#FFF' },
-  countRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12, gap: 6 },
-  stationCount: { color: '#6B6B7B', fontSize: 13 },
+  viewToggle: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12 },
+  toggleButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, backgroundColor: '#14141A', marginRight: 10, gap: 6 },
+  toggleButtonActive: { backgroundColor: '#7C6BFF' },
+  toggleText: { color: '#6B6B7B', fontSize: 13, fontWeight: '500' },
+  toggleTextActive: { color: '#FFF' },
+  stationCount: { color: '#6B6B7B', fontSize: 13, marginLeft: 'auto' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { color: '#6B6B7B', marginTop: 12 },
   listContent: { padding: 20, paddingTop: 0 },
@@ -389,10 +505,32 @@ const styles = StyleSheet.create({
   savingsText: { color: '#00D9A5', fontSize: 11, fontWeight: '600' },
   memberBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFB84D15', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 12 },
   memberText: { color: '#FFB84D', fontSize: 11 },
-  allPricesButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#2A2A35', marginTop: 4 },
-  allPricesText: { color: '#7C6BFF', fontSize: 13, fontWeight: '500', marginRight: 4 },
+  cardActions: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#2A2A35', marginTop: 4, paddingTop: 12 },
+  allPricesButton: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 },
+  allPricesText: { color: '#7C6BFF', fontSize: 13, fontWeight: '500' },
+  directionsSmallButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#00D9A520', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  directionsSmallText: { color: '#00D9A5', fontSize: 13, fontWeight: '500' },
+  mapContainer: { flex: 1, margin: 20, marginTop: 0, borderRadius: 16, overflow: 'hidden' },
+  map: { flex: 1 },
+  mapMarker: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, flexDirection: 'row', alignItems: 'center' },
+  mapMarkerText: { color: '#FFF', fontSize: 11, fontWeight: '700' },
+  trophyIcon: { marginLeft: 4 },
+  mapMarkerArrow: { width: 0, height: 0, borderLeftWidth: 6, borderRightWidth: 6, borderTopWidth: 8, borderLeftColor: 'transparent', borderRightColor: 'transparent', alignSelf: 'center' },
+  mapLegend: { position: 'absolute', bottom: 16, left: 16, right: 16, flexDirection: 'row', justifyContent: 'center', gap: 16, backgroundColor: 'rgba(20,20,26,0.9)', padding: 10, borderRadius: 10 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendDot: { width: 10, height: 10, borderRadius: 5 },
+  legendText: { color: '#FFF', fontSize: 11 },
+  mapUnavailable: { flex: 1, justifyContent: 'center', alignItems: 'center', margin: 20 },
+  mapUnavailableText: { color: '#6B6B7B', fontSize: 16, marginTop: 12 },
+  mapUnavailableSubtext: { color: '#4A4A5A', fontSize: 13, marginTop: 4 },
+  mapStationList: { width: '100%', marginTop: 20, paddingHorizontal: 20 },
+  mapListItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#14141A', padding: 12, borderRadius: 10, marginBottom: 8 },
+  mapListDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
+  mapListName: { flex: 1, color: '#FFF', fontSize: 14 },
+  mapListPrice: { color: '#FFF', fontSize: 14, fontWeight: '700', marginRight: 10 },
+  mapListDistance: { color: '#6B6B7B', fontSize: 12 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#14141A', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: SCREEN_HEIGHT * 0.7 },
+  modalContent: { backgroundColor: '#14141A', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: SCREEN_HEIGHT * 0.75 },
   modalHandle: { width: 40, height: 4, backgroundColor: '#2A2A35', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   brandDotLarge: { width: 48, height: 48, borderRadius: 24, marginRight: 14 },
@@ -403,16 +541,20 @@ const styles = StyleSheet.create({
   allPricesTitle: { color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 12 },
   priceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
   priceGridItem: { width: (SCREEN_WIDTH - 70) / 2, backgroundColor: '#0A0A0F', borderRadius: 12, padding: 14, alignItems: 'center' },
+  priceGridItemSelected: { borderWidth: 1, borderColor: '#7C6BFF' },
   gradeIndicator: { width: 8, height: 8, borderRadius: 4, marginBottom: 8 },
   gradeName: { color: '#6B6B7B', fontSize: 12, marginBottom: 4 },
   gradePrice: { color: '#FFF', fontSize: 22, fontWeight: '700' },
+  belowAvgBadge: { backgroundColor: '#00D9A520', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginTop: 6 },
+  belowAvgText: { color: '#00D9A5', fontSize: 10 },
   amenitiesSection: { marginBottom: 16 },
   amenitiesTitle: { color: '#6B6B7B', fontSize: 13, marginBottom: 8 },
   amenitiesList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   amenityChip: { backgroundColor: '#0A0A0F', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   amenityText: { color: '#FFF', fontSize: 12 },
-  updateInfo: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 16 },
-  updateText: { color: '#6B6B7B', fontSize: 12 },
+  updateInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  updateText: { color: '#6B6B7B', fontSize: 12, marginLeft: 6 },
+  dataSourceText: { color: '#4A4A5A', fontSize: 11 },
   directionsButton: { backgroundColor: '#00D9A5', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 14, gap: 8 },
   directionsButtonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
 });
