@@ -1267,6 +1267,137 @@ async def setup_default_reminders():
     
     return {"message": f"Created {created} default reminders"}
 
+# ===============================================
+# GAS FINDER FEATURE
+# ===============================================
+import random
+
+def generate_gas_stations(lat: float, lng: float, radius_miles: float = 5) -> list:
+    """Generate realistic gas station data around a location"""
+    # Major gas station brands
+    brands = [
+        {"name": "Shell", "logo": "shell"},
+        {"name": "Chevron", "logo": "chevron"},
+        {"name": "ExxonMobil", "logo": "exxon"},
+        {"name": "BP", "logo": "bp"},
+        {"name": "76", "logo": "76"},
+        {"name": "Arco", "logo": "arco"},
+        {"name": "Costco", "logo": "costco"},
+        {"name": "Sam's Club", "logo": "sams"},
+        {"name": "Valero", "logo": "valero"},
+        {"name": "Speedway", "logo": "speedway"},
+        {"name": "Circle K", "logo": "circlek"},
+        {"name": "QuikTrip", "logo": "quiktrip"},
+    ]
+    
+    # Base prices (will vary by station)
+    base_regular = 3.89
+    base_midgrade = 4.19
+    base_premium = 4.49
+    base_diesel = 4.29
+    
+    stations = []
+    num_stations = random.randint(12, 20)
+    
+    for i in range(num_stations):
+        # Random offset from center (roughly within radius)
+        lat_offset = random.uniform(-radius_miles/69, radius_miles/69)
+        lng_offset = random.uniform(-radius_miles/54, radius_miles/54)
+        
+        station_lat = lat + lat_offset
+        station_lng = lng + lng_offset
+        
+        # Calculate distance
+        distance = math.sqrt(lat_offset**2 + lng_offset**2) * 69  # Rough miles
+        
+        # Random brand
+        brand = random.choice(brands)
+        
+        # Price variation (-$0.30 to +$0.20 from base)
+        price_variation = random.uniform(-0.30, 0.20)
+        
+        # Costco/Sam's Club are usually cheaper
+        if brand["name"] in ["Costco", "Sam's Club"]:
+            price_variation = random.uniform(-0.40, -0.25)
+        
+        # Premium stations (Shell, Chevron) might be slightly higher
+        if brand["name"] in ["Shell", "Chevron"]:
+            price_variation = random.uniform(-0.10, 0.20)
+        
+        regular = round(base_regular + price_variation, 2)
+        midgrade = round(base_midgrade + price_variation, 2)
+        premium = round(base_premium + price_variation, 2)
+        diesel = round(base_diesel + price_variation + random.uniform(-0.10, 0.10), 2)
+        
+        # Generate address
+        street_num = random.randint(100, 9999)
+        streets = ["Main St", "Oak Ave", "Broadway", "Market St", "First St", "Highway 101", 
+                   "El Camino Real", "Mission Blvd", "Central Ave", "Park Blvd"]
+        street = random.choice(streets)
+        
+        stations.append({
+            "id": f"station_{i}",
+            "name": brand["name"],
+            "logo": brand["logo"],
+            "address": f"{street_num} {street}",
+            "latitude": round(station_lat, 6),
+            "longitude": round(station_lng, 6),
+            "distance_miles": round(distance, 2),
+            "prices": {
+                "regular": regular,
+                "midgrade": midgrade,
+                "premium": premium,
+                "diesel": diesel
+            },
+            "last_updated": (datetime.now() - timedelta(hours=random.randint(1, 24))).isoformat(),
+            "amenities": random.sample(["Car Wash", "Convenience Store", "ATM", "Restroom", "Air Pump"], 
+                                       random.randint(2, 5)),
+            "is_member_only": brand["name"] in ["Costco", "Sam's Club"],
+            "hours": "24 Hours" if random.random() > 0.3 else "6 AM - 11 PM"
+        })
+    
+    # Sort by premium price (default) or distance
+    stations.sort(key=lambda x: x["prices"]["premium"])
+    
+    return stations
+
+@app.get("/api/gas-stations")
+async def get_gas_stations(lat: float, lng: float, radius: float = 5, sort_by: str = "premium"):
+    """Get gas stations near a location"""
+    stations = generate_gas_stations(lat, lng, radius)
+    
+    # Sort based on preference
+    if sort_by == "distance":
+        stations.sort(key=lambda x: x["distance_miles"])
+    elif sort_by == "regular":
+        stations.sort(key=lambda x: x["prices"]["regular"])
+    elif sort_by == "midgrade":
+        stations.sort(key=lambda x: x["prices"]["midgrade"])
+    elif sort_by == "premium":
+        stations.sort(key=lambda x: x["prices"]["premium"])
+    elif sort_by == "diesel":
+        stations.sort(key=lambda x: x["prices"]["diesel"])
+    
+    # Calculate savings info
+    if stations:
+        premium_prices = [s["prices"]["premium"] for s in stations]
+        avg_price = sum(premium_prices) / len(premium_prices)
+        cheapest = min(premium_prices)
+        savings_per_gallon = round(avg_price - cheapest, 2)
+        
+        return {
+            "stations": stations,
+            "summary": {
+                "total_found": len(stations),
+                "cheapest_premium": cheapest,
+                "average_premium": round(avg_price, 2),
+                "potential_savings_per_gallon": savings_per_gallon,
+                "potential_savings_per_fillup": round(savings_per_gallon * 15, 2)  # Assuming 15 gal tank
+            }
+        }
+    
+    return {"stations": [], "summary": None}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

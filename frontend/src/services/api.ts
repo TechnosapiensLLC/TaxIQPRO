@@ -320,6 +320,14 @@ export const api = {
     const response = await apiClient.post('/reminders/setup-defaults');
     return response.data;
   },
+
+  // ========================================
+  // GAS FINDER
+  // ========================================
+  getGasStations: async (lat: number, lng: number, radius: number = 5, sortBy: string = 'premium') => {
+    const response = await apiClient.get(`/gas-stations?lat=${lat}&lng=${lng}&radius=${radius}&sort_by=${sortBy}`);
+    return response.data;
+  },
 };
 
 export default api;

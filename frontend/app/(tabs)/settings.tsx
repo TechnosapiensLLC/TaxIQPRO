@@ -76,6 +76,13 @@ export default function SettingsScreen() {
           onPress: () => router.push('/tax-coach'),
         },
         {
+          icon: 'flame',
+          label: 'Gas Finder',
+          sublabel: 'Find cheapest gas near you',
+          color: '#FF6B6B',
+          onPress: () => router.push('/gas-finder'),
+        },
+        {
           icon: 'swap-horizontal',
           label: 'Swipe to Classify',
           sublabel: 'Quickly categorize expenses',

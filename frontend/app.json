@@ -64,7 +64,8 @@
           "locationWhenInUsePermission": "Track mileage for tax deductions",
           "locationAlwaysAndWhenInUsePermission": "Auto-detect trips while driving"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
