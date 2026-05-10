@@ -420,10 +420,225 @@ def test_csv_import():
         print_result("CSV Import Test", False, f"Error: {str(e)}")
         return False
 
+def test_tax_filing_analyzer():
+    """Test TAX FILING ANALYZER endpoint"""
+    print_test_header("Tax Filing Analyzer API")
+    
+    try:
+        # Test 1: Upload a valid PDF file
+        print(f"{Colors.YELLOW}Test 1: Testing POST /api/analyze-filing with PDF{Colors.END}")
+        
+        # Create a more realistic tax filing PDF
+        tax_pdf_content = b"""%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+/Resources <<
+  /Font <<
+    /F1 <<
+      /Type /Font
+      /Subtype /Type1
+      /BaseFont /Helvetica
+    >>
+  >>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Length 250
+>>
+stream
+BT
+/F1 14 Tf
+72 720 Td
+(2024 Schedule C - Profit or Loss from Business) Tj
+0 -30 Td
+(Business: Rideshare Driver) Tj
+0 -30 Td
+(Gross Income: $78,500) Tj
+0 -30 Td
+(Total Expenses: $15,200) Tj
+0 -30 Td
+(Vehicle Expenses: $8,500) Tj
+0 -30 Td
+(Insurance: $2,400) Tj
+0 -30 Td
+(Net Profit: $63,300) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000010 00000 n 
+0000000062 00000 n 
+0000000119 00000 n 
+0000000344 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+644
+%%EOF"""
+        
+        files = {
+            'file': ('schedule_c_2024.pdf', tax_pdf_content, 'application/pdf')
+        }
+        
+        response = requests.post(f"{BASE_URL}/analyze-filing", files=files, timeout=30)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify response structure
+            required_fields = ['id', 'filename', 'analysis']
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                print_result("PDF Upload - Response Structure", False, 
+                           f"Missing fields: {', '.join(missing_fields)}")
+                return False
+            
+            print_result("PDF Upload", True, f"File uploaded successfully. ID: {data.get('id')}")
+            
+            # Verify analysis structure
+            analysis = data.get('analysis', {})
+            required_analysis_fields = [
+                'filing_type', 'tax_year', 'total_income', 'total_deductions',
+                'missed_deductions', 'recommendations', 'imported_data',
+                'insights', 'app_features_to_use', 'potential_savings', 'tax_efficiency_score'
+            ]
+            
+            missing_analysis_fields = [field for field in required_analysis_fields if field not in analysis]
+            
+            if missing_analysis_fields:
+                print_result("Analysis Structure", False, 
+                           f"Missing analysis fields: {', '.join(missing_analysis_fields)}")
+                return False
+            
+            print_result("Analysis Structure", True, "All required fields present")
+            
+            # Display key analysis data
+            print(f"\n{Colors.BOLD}Analysis Results:{Colors.END}")
+            print(f"   Filing Type: {analysis.get('filing_type', 'N/A')}")
+            print(f"   Tax Year: {analysis.get('tax_year', 'N/A')}")
+            print(f"   Total Income: ${analysis.get('total_income', 0):,.2f}")
+            print(f"   Total Deductions: ${analysis.get('total_deductions', 0):,.2f}")
+            print(f"   Potential Savings: ${analysis.get('potential_savings', 0):,.2f}")
+            print(f"   Tax Efficiency Score: {analysis.get('tax_efficiency_score', 0)}/100")
+            
+            # Check missed deductions
+            missed_deductions = analysis.get('missed_deductions', [])
+            if isinstance(missed_deductions, list) and len(missed_deductions) > 0:
+                print(f"\n   Missed Deductions ({len(missed_deductions)}):")
+                for i, deduction in enumerate(missed_deductions[:3]):
+                    name = deduction.get('name', 'N/A')
+                    value = deduction.get('estimated_value', 0)
+                    print(f"      {i+1}. {name}: ${value:,.2f}")
+                print_result("Missed Deductions", True, f"Found {len(missed_deductions)} missed deductions")
+            else:
+                print_result("Missed Deductions", False, "No missed deductions in response")
+            
+            # Check recommendations
+            recommendations = analysis.get('recommendations', [])
+            if isinstance(recommendations, list) and len(recommendations) > 0:
+                print(f"\n   Recommendations ({len(recommendations)}):")
+                for i, rec in enumerate(recommendations[:3]):
+                    title = rec.get('title', 'N/A')
+                    priority = rec.get('priority', 'N/A')
+                    print(f"      {i+1}. {title} (Priority: {priority})")
+                print_result("Recommendations", True, f"Found {len(recommendations)} recommendations")
+            else:
+                print_result("Recommendations", False, "No recommendations in response")
+            
+            # Check imported data
+            imported_data = analysis.get('imported_data', {})
+            income_sources = imported_data.get('income_sources', [])
+            expense_categories = imported_data.get('expense_categories', [])
+            print(f"\n   Imported Data:")
+            print(f"      Income Sources: {len(income_sources)}")
+            print(f"      Expense Categories: {len(expense_categories)}")
+            print_result("Imported Data", True, 
+                        f"{len(income_sources)} income sources, {len(expense_categories)} expense categories")
+            
+            # Check insights
+            insights = analysis.get('insights', [])
+            if isinstance(insights, list) and len(insights) > 0:
+                print(f"\n   Insights ({len(insights)}):")
+                for i, insight in enumerate(insights[:2]):
+                    print(f"      {i+1}. {insight}")
+                print_result("Insights", True, f"Found {len(insights)} insights")
+            else:
+                print_result("Insights", False, "No insights in response")
+            
+            # Check app features
+            app_features = analysis.get('app_features_to_use', [])
+            if isinstance(app_features, list) and len(app_features) > 0:
+                print(f"\n   App Features to Use ({len(app_features)}):")
+                for i, feature in enumerate(app_features[:3]):
+                    feature_name = feature.get('feature', 'N/A')
+                    priority = feature.get('priority', 'N/A')
+                    print(f"      {i+1}. {feature_name} (Priority: {priority})")
+                print_result("App Features", True, f"Found {len(app_features)} app features")
+            else:
+                print_result("App Features", False, "No app features in response")
+            
+        else:
+            print_result("PDF Upload", False, f"Status: {response.status_code}, Response: {response.text}")
+            return False
+        
+        # Test 2: Error handling - upload invalid file type
+        print(f"\n{Colors.YELLOW}Test 2: Testing error handling with invalid file type{Colors.END}")
+        
+        invalid_files = {
+            'file': ('test_document.txt', b'This is a text file, not a PDF', 'text/plain')
+        }
+        
+        error_response = requests.post(f"{BASE_URL}/analyze-filing", files=invalid_files, timeout=10)
+        
+        if error_response.status_code == 400:
+            print_result("Error Handling - Invalid File Type", True, 
+                        "Correctly rejected non-PDF/non-image file with 400 status")
+        else:
+            print_result("Error Handling - Invalid File Type", False, 
+                        f"Expected 400 status, got {error_response.status_code}")
+            return False
+        
+        return True
+        
+    except Exception as e:
+        print_result("Tax Filing Analyzer Test", False, f"Error: {str(e)}")
+        import traceback
+        print(f"{Colors.RED}Traceback: {traceback.format_exc()}{Colors.END}")
+        return False
+
 def main():
     """Main testing function"""
     print(f"{Colors.BOLD}{Colors.BLUE}TaxIQ Pro Backend API Testing Suite{Colors.END}")
-    print(f"{Colors.BLUE}Testing 5 Premium Feature Endpoints{Colors.END}")
+    print(f"{Colors.BLUE}Testing Premium Feature Endpoints{Colors.END}")
     print(f"{Colors.BLUE}Base URL: {BASE_URL}{Colors.END}")
     
     # Track test results
@@ -456,6 +671,9 @@ def main():
     
     # Feature 2: CSV Import
     results['csv_import'] = test_csv_import()
+    
+    # Tax Filing Analyzer
+    results['tax_filing_analyzer'] = test_tax_filing_analyzer()
     
     # Summary
     print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.END}")

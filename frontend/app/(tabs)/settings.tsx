@@ -69,6 +69,13 @@ export default function SettingsScreen() {
       title: 'Power Features',
       items: [
         {
+          icon: 'analytics',
+          label: 'Tax Filing Analyzer',
+          sublabel: 'AI reviews filings for missed deductions & S-Corp',
+          color: '#7C6BFF',
+          onPress: () => router.push('/tax-analyzer'),
+        },
+        {
           icon: 'sparkles',
           label: 'AI Tax Coach',
           sublabel: 'Get personalized tax advice',

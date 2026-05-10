@@ -285,6 +285,21 @@ backend:
           agent: "testing"
           comment: "GET /api/tax-dates, POST /api/reminders/setup-defaults, and GET /api/reminders working excellently - tax dates returns 5 upcoming dates with proper days_left calculation. Setup-defaults creates 5 quarterly and filing reminders. Reminders endpoint returns complete reminder data with proper formatting."
 
+  - task: "Tax Filing Analyzer API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented POST /api/analyze-filing endpoint that accepts PDF/image uploads of tax filings. Uses Gemini AI (Emergent LLM Key) to analyze documents and return: missed deductions, S-Corp recommendations, tax savings estimates, and insights. Frontend screen created at /app/frontend/app/tax-analyzer.tsx. Entry point added to Settings screen."
+        - working: true
+          agent: "testing"
+          comment: "POST /api/analyze-filing working excellently. Tested with PDF upload - successfully accepts files, analyzes with real Gemini AI (confirmed not using mock data), and returns comprehensive analysis. All required fields present: filing_type, tax_year, total_income, total_deductions, missed_deductions (6 found), recommendations (5 found with priorities), imported_data (1 income source, 3 expense categories), insights (4 found), app_features_to_use (5 found), potential_savings ($2,350), tax_efficiency_score (65/100). Error handling working correctly - rejects non-PDF/non-image files with 400 status. AI integration confirmed active and functional."
+
 frontend:
 
 metadata:
@@ -294,14 +309,17 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "All 5 premium feature endpoints tested and verified working"
+  current_focus: []
   stuck_tasks: []
-  test_all: true
-  test_priority: "completed"
+  test_all: false
+  test_priority: "high_first"
 
 agent_communication:
     - agent: "testing"
       message: "Comprehensive backend testing completed successfully. All 12 requested API endpoints tested and working correctly. Overall success rate: 88.9% (16/18 tests passed). The 2 failed tests were edge case validation tests - the core functionality is perfect. Key findings: 1) All primary endpoints working excellently, 2) AI integration active and functional (not mocked), 3) Database operations successful, 4) Tax calculations accurate, 5) Only minor validation issues that don't affect functionality. Backend is production-ready."
     - agent: "testing"
       message: "Premium Features Testing Completed Successfully! All 5 new premium feature endpoints tested and working perfectly: 1) Bank Statement Upload (POST /api/upload/statement) - AI parsing working with fallback mock data, 2) CSV Import (POST /api/upload/csv) - processes gig platform earnings correctly, 3) Auto Trip Settings (GET/POST /api/trips/settings) - settings persistence verified, 4) Trip Classification (POST /api/trips/auto, GET /api/trips/pending) - auto-detection and pending trips working, 5) Tax Reminders (GET /api/tax-dates, POST /api/reminders/setup-defaults, GET /api/reminders) - all endpoints returning proper data with days_left calculations. All curl tests passed. Perfect success rate: 7/7 tests passed (100%)."
+    - agent: "main"
+      message: "Implemented Tax Filing Analyzer feature. New endpoint POST /api/analyze-filing added to server.py. Uses Gemini AI (Emergent LLM Key) to analyze uploaded tax documents and return: 1) Filing overview (type, year, income, deductions), 2) Missed deductions with estimated values, 3) Recommendations including S-Corp analysis, 4) Tax savings estimates, 5) AI insights, 6) App features to use. Frontend screen created at tax-analyzer.tsx with entry in Settings. Please test the new endpoint."
+    - agent: "testing"
+      message: "Tax Filing Analyzer API Testing Completed Successfully! POST /api/analyze-filing endpoint tested and working perfectly. Key findings: 1) File upload working - accepts PDF and image files, 2) Real Gemini AI integration confirmed active (not using mock data), 3) Comprehensive analysis returned with all required fields, 4) Error handling working - correctly rejects invalid file types with 400 status, 5) Response includes: filing_type, tax_year, income/deductions, 6 missed deductions, 5 recommendations with priorities, imported data, 4 insights, 5 app features, potential savings ($2,350), and tax efficiency score (65/100). Test result: 100% pass rate. Backend API is production-ready."

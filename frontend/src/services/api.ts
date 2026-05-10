@@ -328,6 +328,58 @@ export const api = {
     const response = await apiClient.get(`/gas-stations?lat=${lat}&lng=${lng}&radius=${radius}&sort_by=${sortBy}`);
     return response.data;
   },
+
+  // ========================================
+  // TAX FILING ANALYZER
+  // ========================================
+  analyzeTaxFiling: async (fileUri: string, fileName: string, fileType: string = 'pdf') => {
+    const formData = new FormData();
+    const mimeType = fileType === 'pdf' ? 'application/pdf' : `image/${fileType}`;
+    formData.append('file', {
+      uri: fileUri,
+      type: mimeType,
+      name: fileName,
+    } as any);
+    
+    const response = await apiClient.post('/analyze-filing', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  importIncomeFromAnalysis: async (incomeSources: any[]) => {
+    // Use existing import endpoint
+    const entries = incomeSources.map((source: any) => ({
+      source: source.source,
+      amount: source.amount,
+      date: new Date().toISOString().split('T')[0],
+      description: 'Imported from tax filing analysis',
+      is_1099: source.is_1099 ?? true,
+    }));
+    const response = await apiClient.post('/income/import-csv', entries);
+    return response.data;
+  },
+
+  importExpensesFromAnalysis: async (expenses: any[]) => {
+    // Import as receipts
+    const receipts = expenses.map((exp: any) => ({
+      vendor: exp.category,
+      amount: exp.amount,
+      date: new Date().toISOString().split('T')[0],
+      category: exp.category,
+      notes: 'Imported from tax filing analysis',
+      is_deductible: true,
+    }));
+    
+    let imported = 0;
+    for (const receipt of receipts) {
+      await apiClient.post('/receipts', receipt);
+      imported++;
+    }
+    return { imported, message: `Imported ${imported} expense records` };
+  },
 };
 
 export default api;
