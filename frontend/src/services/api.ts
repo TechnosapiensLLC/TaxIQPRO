@@ -160,12 +160,28 @@ export const api = {
   uploadBankStatement: async (fileUri: string, fileName: string) => {
     const formData = new FormData();
     
-    // Handle web vs native platforms differently
-    if (typeof window !== 'undefined' && fileUri.startsWith('blob:')) {
-      // Web platform - fetch the blob and append
-      const fetchResponse = await fetch(fileUri);
-      const blob = await fetchResponse.blob();
-      formData.append('file', blob, fileName);
+    // Determine if we're on web platform
+    const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
+    
+    if (isWeb) {
+      // Web platform - handle blob: and data: URIs
+      if (fileUri.startsWith('blob:') || fileUri.startsWith('data:')) {
+        const fetchResponse = await fetch(fileUri);
+        const blob = await fetchResponse.blob();
+        formData.append('file', blob, fileName);
+      } else {
+        try {
+          const fetchResponse = await fetch(fileUri);
+          const blob = await fetchResponse.blob();
+          formData.append('file', blob, fileName);
+        } catch (e) {
+          formData.append('file', {
+            uri: fileUri,
+            type: 'application/pdf',
+            name: fileName,
+          } as any);
+        }
+      }
     } else {
       // React Native platform
       formData.append('file', {
@@ -195,12 +211,28 @@ export const api = {
   uploadCSV: async (fileUri: string, fileName: string, platform: string) => {
     const formData = new FormData();
     
-    // Handle web vs native platforms differently
-    if (typeof window !== 'undefined' && fileUri.startsWith('blob:')) {
-      // Web platform - fetch the blob and append
-      const fetchResponse = await fetch(fileUri);
-      const blob = await fetchResponse.blob();
-      formData.append('file', blob, fileName);
+    // Determine if we're on web platform
+    const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
+    
+    if (isWeb) {
+      // Web platform - handle blob: and data: URIs
+      if (fileUri.startsWith('blob:') || fileUri.startsWith('data:')) {
+        const fetchResponse = await fetch(fileUri);
+        const blob = await fetchResponse.blob();
+        formData.append('file', blob, fileName);
+      } else {
+        try {
+          const fetchResponse = await fetch(fileUri);
+          const blob = await fetchResponse.blob();
+          formData.append('file', blob, fileName);
+        } catch (e) {
+          formData.append('file', {
+            uri: fileUri,
+            type: 'text/csv',
+            name: fileName,
+          } as any);
+        }
+      }
     } else {
       // React Native platform
       formData.append('file', {
@@ -357,12 +389,37 @@ export const api = {
     const formData = new FormData();
     const mimeType = fileType === 'pdf' ? 'application/pdf' : `image/${fileType}`;
     
-    // Handle web vs native platforms differently
-    if (typeof window !== 'undefined' && fileUri.startsWith('blob:')) {
-      // Web platform - fetch the blob and append
-      const response = await fetch(fileUri);
-      const blob = await response.blob();
-      formData.append('file', blob, fileName);
+    // Determine if we're on web platform
+    const isWeb = typeof window !== 'undefined' && typeof document !== 'undefined';
+    
+    if (isWeb) {
+      // Web platform - handle blob: and data: URIs, or File objects
+      if (fileUri.startsWith('blob:') || fileUri.startsWith('data:')) {
+        const fetchResponse = await fetch(fileUri);
+        const blob = await fetchResponse.blob();
+        formData.append('file', blob, fileName);
+      } else if (fileUri.startsWith('file:') || fileUri.startsWith('/')) {
+        // This shouldn't happen on web, but handle it anyway
+        formData.append('file', {
+          uri: fileUri,
+          type: mimeType,
+          name: fileName,
+        } as any);
+      } else {
+        // Assume it's a URL or data URL
+        try {
+          const fetchResponse = await fetch(fileUri);
+          const blob = await fetchResponse.blob();
+          formData.append('file', blob, fileName);
+        } catch (e) {
+          // Fallback to direct append
+          formData.append('file', {
+            uri: fileUri,
+            type: mimeType,
+            name: fileName,
+          } as any);
+        }
+      }
     } else {
       // React Native platform
       formData.append('file', {

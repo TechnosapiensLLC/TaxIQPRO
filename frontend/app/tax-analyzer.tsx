@@ -68,15 +68,29 @@ export default function TaxAnalyzerScreen() {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const file = result.assets[0];
-        console.log('Document picked:', file.name, file.uri, file.mimeType);
+        console.log('Document picked:', {
+          name: file.name,
+          uri: file.uri,
+          mimeType: file.mimeType,
+          size: file.size
+        });
         
         // Get file extension to determine type
         const fileExt = file.name?.split('.').pop()?.toLowerCase() || 'pdf';
-        await analyzeFile(file.uri, file.name || 'document.pdf', fileExt);
+        
+        // On web, the file object may have a 'file' property with the actual File object
+        const fileObj = (file as any).file;
+        if (fileObj && Platform.OS === 'web') {
+          // Web platform with File object - create a blob URL
+          const blobUrl = URL.createObjectURL(fileObj);
+          await analyzeFile(blobUrl, file.name || 'document.pdf', fileExt);
+        } else {
+          await analyzeFile(file.uri, file.name || 'document.pdf', fileExt);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Document picker error:', error);
-      Alert.alert('Error', 'Failed to pick document. Please try again.');
+      Alert.alert('Error', `Failed to pick document: ${error?.message || 'Unknown error'}`);
     }
   };
 
