@@ -68,11 +68,15 @@ export default function TaxAnalyzerScreen() {
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const file = result.assets[0];
-        await analyzeFile(file.uri, file.name, 'pdf');
+        console.log('Document picked:', file.name, file.uri, file.mimeType);
+        
+        // Get file extension to determine type
+        const fileExt = file.name?.split('.').pop()?.toLowerCase() || 'pdf';
+        await analyzeFile(file.uri, file.name || 'document.pdf', fileExt);
       }
     } catch (error) {
       console.error('Document picker error:', error);
-      Alert.alert('Error', 'Failed to pick document');
+      Alert.alert('Error', 'Failed to pick document. Please try again.');
     }
   };
 

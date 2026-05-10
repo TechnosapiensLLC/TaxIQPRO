@@ -159,16 +159,27 @@ export const api = {
   // ========================================
   uploadBankStatement: async (fileUri: string, fileName: string) => {
     const formData = new FormData();
-    formData.append('file', {
-      uri: fileUri,
-      type: 'application/pdf',
-      name: fileName,
-    } as any);
+    
+    // Handle web vs native platforms differently
+    if (typeof window !== 'undefined' && fileUri.startsWith('blob:')) {
+      // Web platform - fetch the blob and append
+      const fetchResponse = await fetch(fileUri);
+      const blob = await fetchResponse.blob();
+      formData.append('file', blob, fileName);
+    } else {
+      // React Native platform
+      formData.append('file', {
+        uri: fileUri,
+        type: 'application/pdf',
+        name: fileName,
+      } as any);
+    }
     
     const response = await apiClient.post('/upload/statement', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 180000, // 3 minute timeout for AI analysis
     });
     return response.data;
   },
@@ -183,11 +194,21 @@ export const api = {
   // ========================================
   uploadCSV: async (fileUri: string, fileName: string, platform: string) => {
     const formData = new FormData();
-    formData.append('file', {
-      uri: fileUri,
-      type: 'text/csv',
-      name: fileName,
-    } as any);
+    
+    // Handle web vs native platforms differently
+    if (typeof window !== 'undefined' && fileUri.startsWith('blob:')) {
+      // Web platform - fetch the blob and append
+      const fetchResponse = await fetch(fileUri);
+      const blob = await fetchResponse.blob();
+      formData.append('file', blob, fileName);
+    } else {
+      // React Native platform
+      formData.append('file', {
+        uri: fileUri,
+        type: 'text/csv',
+        name: fileName,
+      } as any);
+    }
     formData.append('platform', platform);
     
     const response = await apiClient.post('/upload/csv', formData, {
@@ -335,18 +356,29 @@ export const api = {
   analyzeTaxFiling: async (fileUri: string, fileName: string, fileType: string = 'pdf') => {
     const formData = new FormData();
     const mimeType = fileType === 'pdf' ? 'application/pdf' : `image/${fileType}`;
-    formData.append('file', {
-      uri: fileUri,
-      type: mimeType,
-      name: fileName,
-    } as any);
     
-    const response = await apiClient.post('/analyze-filing', formData, {
+    // Handle web vs native platforms differently
+    if (typeof window !== 'undefined' && fileUri.startsWith('blob:')) {
+      // Web platform - fetch the blob and append
+      const response = await fetch(fileUri);
+      const blob = await response.blob();
+      formData.append('file', blob, fileName);
+    } else {
+      // React Native platform
+      formData.append('file', {
+        uri: fileUri,
+        type: mimeType,
+        name: fileName,
+      } as any);
+    }
+    
+    const apiResponse = await apiClient.post('/analyze-filing', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 180000, // 3 minute timeout for AI analysis
     });
-    return response.data;
+    return apiResponse.data;
   },
 
   importIncomeFromAnalysis: async (incomeSources: any[]) => {
