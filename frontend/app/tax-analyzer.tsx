@@ -245,7 +245,8 @@ export default function TaxAnalyzerScreen() {
   const renderAnalysisResults = () => {
     if (!analysis) return null;
 
-    const totalMissedDeductions = analysis.missed_deductions.reduce(
+    const missedDeductions = analysis.missed_deductions || [];
+    const totalMissedDeductions = missedDeductions.reduce(
       (sum, d) => sum + (d.estimated_value || 0),
       0
     );
@@ -313,12 +314,12 @@ export default function TaxAnalyzerScreen() {
         ))}
 
         {/* Missed Deductions Section */}
-        {renderSection(
-          `Missed Deductions (${analysis.missed_deductions.length})`,
+        {missedDeductions.length > 0 && renderSection(
+          `Missed Deductions (${missedDeductions.length})`,
           'missed',
           'alert-circle',
           <View>
-            {analysis.missed_deductions.map((deduction, index) => (
+            {missedDeductions.map((deduction, index) => (
               <View key={index} style={styles.deductionItem}>
                 <View style={styles.deductionHeader}>
                   <Text style={styles.deductionName}>{deduction.name}</Text>
@@ -339,7 +340,7 @@ export default function TaxAnalyzerScreen() {
         )}
 
         {/* Recommendations Section (S-Corp, etc.) */}
-        {renderSection(
+        {(analysis.recommendations?.length > 0) && renderSection(
           `Recommendations (${analysis.recommendations.length})`,
           'recommendations',
           'bulb',
@@ -353,7 +354,7 @@ export default function TaxAnalyzerScreen() {
                       { backgroundColor: getPriorityColor(rec.priority) },
                     ]}
                   >
-                    <Text style={styles.priorityText}>{rec.priority.toUpperCase()}</Text>
+                    <Text style={styles.priorityText}>{rec.priority?.toUpperCase() || 'MEDIUM'}</Text>
                   </View>
                   <Text style={styles.recTitle}>{rec.title}</Text>
                 </View>
@@ -364,7 +365,7 @@ export default function TaxAnalyzerScreen() {
         )}
 
         {/* Insights Section */}
-        {renderSection('AI Insights', 'insights', 'sparkles', (
+        {(analysis.insights?.length > 0) && renderSection('AI Insights', 'insights', 'sparkles', (
           <View>
             {analysis.insights.map((insight, index) => (
               <View key={index} style={styles.insightItem}>
@@ -376,7 +377,7 @@ export default function TaxAnalyzerScreen() {
         ))}
 
         {/* App Features Section */}
-        {renderSection('Recommended Features', 'features', 'apps', (
+        {(analysis.app_features_to_use?.length > 0) && renderSection('Recommended Features', 'features', 'apps', (
           <View>
             {analysis.app_features_to_use.map((feature, index) => (
               <View key={index} style={styles.featureItem}>
