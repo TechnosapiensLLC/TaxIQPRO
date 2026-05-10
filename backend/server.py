@@ -1742,6 +1742,273 @@ async def import_filing_data(analysis_id: str = Form(...)):
         "imported": imported_count
     }
 
+# ===============================================
+# DEDUCTION MAXIMIZER FEATURE
+# ===============================================
+
+# Profession-specific deduction suggestions
+PROFESSION_DEDUCTIONS = {
+    "rideshare": [
+        {"name": "Vehicle Mileage", "description": "Track all miles driven for business", "avg_value": 8000, "category": "Vehicle & Gas"},
+        {"name": "Car Washes", "description": "Keep your vehicle clean for passengers", "avg_value": 360, "category": "Maintenance & Repairs"},
+        {"name": "Phone Mount/Charger", "description": "Equipment for navigation", "avg_value": 50, "category": "Equipment & Supplies"},
+        {"name": "Dash Cam", "description": "Safety equipment for rideshare", "avg_value": 150, "category": "Equipment & Supplies"},
+        {"name": "Phone Bill", "description": "Business % of phone plan (typically 60-80%)", "avg_value": 720, "category": "Phone & Internet"},
+        {"name": "Roadside Assistance (AAA)", "description": "Business portion deductible", "avg_value": 100, "category": "Insurance"},
+        {"name": "Snacks/Water for Passengers", "description": "Supplies to improve ratings", "avg_value": 200, "category": "Equipment & Supplies"},
+        {"name": "Cleaning Supplies", "description": "Interior cleaning products", "avg_value": 100, "category": "Equipment & Supplies"},
+        {"name": "Parking Fees", "description": "Business-related parking", "avg_value": 500, "category": "Parking & Tolls"},
+        {"name": "Tolls", "description": "Bridge/highway tolls during trips", "avg_value": 400, "category": "Parking & Tolls"},
+    ],
+    "delivery": [
+        {"name": "Vehicle Mileage", "description": "Track all delivery miles", "avg_value": 10000, "category": "Vehicle & Gas"},
+        {"name": "Insulated Delivery Bags", "description": "Hot/cold bags for food delivery", "avg_value": 80, "category": "Equipment & Supplies"},
+        {"name": "Phone Mount/Charger", "description": "Navigation equipment", "avg_value": 50, "category": "Equipment & Supplies"},
+        {"name": "Phone Bill", "description": "Business % of phone plan", "avg_value": 720, "category": "Phone & Internet"},
+        {"name": "Bike/Scooter Maintenance", "description": "If using alternative transport", "avg_value": 300, "category": "Maintenance & Repairs"},
+        {"name": "Weather Gear", "description": "Rain gear, winter clothing for work", "avg_value": 150, "category": "Equipment & Supplies"},
+        {"name": "Parking Fees", "description": "Parking during pickups/deliveries", "avg_value": 300, "category": "Parking & Tolls"},
+    ],
+    "freelance": [
+        {"name": "Home Office Deduction", "description": "Dedicated workspace at home", "avg_value": 1500, "category": "Office Supplies"},
+        {"name": "Computer/Electronics", "description": "Work equipment depreciation", "avg_value": 500, "category": "Equipment & Supplies"},
+        {"name": "Software Subscriptions", "description": "Tools for your work", "avg_value": 600, "category": "Software & Subscriptions"},
+        {"name": "Internet Bill", "description": "Business % of home internet", "avg_value": 480, "category": "Phone & Internet"},
+        {"name": "Professional Development", "description": "Courses, books, training", "avg_value": 500, "category": "Education & Training"},
+        {"name": "Office Supplies", "description": "Paper, pens, printer ink, etc.", "avg_value": 200, "category": "Office Supplies"},
+        {"name": "Health Insurance", "description": "Self-employed health insurance deduction", "avg_value": 4800, "category": "Insurance"},
+        {"name": "Retirement Contributions", "description": "SEP-IRA or Solo 401(k)", "avg_value": 6000, "category": "Other"},
+    ],
+    "general": [
+        {"name": "Phone Bill", "description": "Business % of phone plan", "avg_value": 600, "category": "Phone & Internet"},
+        {"name": "Internet Bill", "description": "Business % of internet", "avg_value": 400, "category": "Phone & Internet"},
+        {"name": "Office Supplies", "description": "General business supplies", "avg_value": 200, "category": "Office Supplies"},
+        {"name": "Professional Services", "description": "Tax prep, legal, accounting", "avg_value": 400, "category": "Professional Services"},
+        {"name": "Bank Fees", "description": "Business account fees", "avg_value": 120, "category": "Other"},
+        {"name": "Health Insurance", "description": "Self-employed deduction", "avg_value": 4800, "category": "Insurance"},
+    ]
+}
+
+@app.get("/api/deduction-maximizer")
+async def get_deduction_analysis():
+    """Analyze current deductions and suggest improvements"""
+    # Get all current data
+    receipts = await db.receipts.find().to_list(length=1000)
+    mileage_entries = await db.mileage.find().to_list(length=1000)
+    income_entries = await db.income.find().to_list(length=1000)
+    
+    # Calculate current totals
+    total_income = sum(i.get("amount", 0) for i in income_entries)
+    current_expense_deductions = sum(r.get("amount", 0) for r in receipts if r.get("is_deductible", False))
+    current_mileage_deductions = sum(m.get("deduction_amount", 0) for m in mileage_entries)
+    total_current_deductions = current_expense_deductions + current_mileage_deductions
+    
+    # Analyze expense categories
+    expense_by_category = {}
+    for receipt in receipts:
+        cat = receipt.get("category", "Other")
+        if receipt.get("is_deductible", False):
+            expense_by_category[cat] = expense_by_category.get(cat, 0) + receipt.get("amount", 0)
+    
+    # Determine profession based on income sources
+    income_sources = [i.get("source", "").lower() for i in income_entries]
+    profession = "general"
+    if any(s in ["uber", "lyft"] for s in income_sources):
+        profession = "rideshare"
+    elif any(s in ["doordash", "ubereats", "instacart", "grubhub"] for s in income_sources):
+        profession = "delivery"
+    elif any(s in ["upwork", "fiverr", "freelance"] for s in income_sources):
+        profession = "freelance"
+    
+    # Get profession-specific suggestions
+    suggestions = PROFESSION_DEDUCTIONS.get(profession, PROFESSION_DEDUCTIONS["general"])
+    
+    # Filter suggestions to only show ones not being tracked
+    missing_deductions = []
+    for suggestion in suggestions:
+        cat = suggestion["category"]
+        current_amount = expense_by_category.get(cat, 0)
+        # If they're tracking less than 50% of typical, suggest it
+        if current_amount < suggestion["avg_value"] * 0.5:
+            missing_deductions.append({
+                **suggestion,
+                "current_tracked": current_amount,
+                "potential_savings": round(suggestion["avg_value"] * 0.25, 2)  # Rough tax savings estimate
+            })
+    
+    # Calculate deduction health score (0-100)
+    typical_deduction_rate = 0.25  # Typical gig worker deducts ~25% of income
+    expected_deductions = total_income * typical_deduction_rate
+    if expected_deductions > 0:
+        deduction_score = min(100, int((total_current_deductions / expected_deductions) * 100))
+    else:
+        deduction_score = 0
+    
+    # Generate tips based on data
+    tips = []
+    if len(mileage_entries) == 0:
+        tips.append("Start tracking your mileage! At $0.70/mile, even 5,000 miles = $3,500 in deductions.")
+    if "Phone & Internet" not in expense_by_category:
+        tips.append("Don't forget to deduct the business portion of your phone and internet bills.")
+    if total_current_deductions < total_income * 0.15:
+        tips.append("Your deduction rate seems low. Make sure you're capturing all business expenses.")
+    if profession in ["rideshare", "delivery"] and expense_by_category.get("Vehicle & Gas", 0) < 1000:
+        tips.append("As a driver, vehicle expenses should be your largest deduction. Track everything!")
+    
+    total_potential_savings = sum(d["potential_savings"] for d in missing_deductions)
+    
+    return {
+        "deduction_score": deduction_score,
+        "current_deductions": {
+            "expenses": round(current_expense_deductions, 2),
+            "mileage": round(current_mileage_deductions, 2),
+            "total": round(total_current_deductions, 2)
+        },
+        "total_income": round(total_income, 2),
+        "deduction_rate": round((total_current_deductions / total_income * 100) if total_income > 0 else 0, 1),
+        "profession_detected": profession,
+        "missing_deductions": missing_deductions[:8],  # Top 8 suggestions
+        "expense_breakdown": expense_by_category,
+        "tips": tips,
+        "potential_additional_savings": round(total_potential_savings, 2),
+        "receipts_count": len(receipts),
+        "trips_count": len(mileage_entries)
+    }
+
+# ===============================================
+# QUARTERLY TAX ESTIMATOR FEATURE
+# ===============================================
+
+@app.get("/api/quarterly-estimator")
+async def get_quarterly_estimate():
+    """Calculate quarterly estimated tax payments"""
+    # Get all data
+    receipts = await db.receipts.find().to_list(length=1000)
+    mileage_entries = await db.mileage.find().to_list(length=1000)
+    income_entries = await db.income.find().to_list(length=1000)
+    
+    # Calculate totals
+    total_income = sum(i.get("amount", 0) for i in income_entries)
+    total_deductible_expenses = sum(r.get("amount", 0) for r in receipts if r.get("is_deductible", False))
+    total_mileage_deduction = sum(m.get("deduction_amount", 0) for m in mileage_entries)
+    total_deductions = total_deductible_expenses + total_mileage_deduction
+    
+    # Calculate net self-employment income
+    net_income = max(0, total_income - total_deductions)
+    
+    # Self-employment tax calculation
+    se_tax_base = net_income * 0.9235  # Only 92.35% is subject to SE tax
+    self_employment_tax = se_tax_base * SELF_EMPLOYMENT_TAX_RATE
+    
+    # Deductible portion of SE tax (50%)
+    se_tax_deduction = self_employment_tax * 0.5
+    
+    # Adjusted gross income for income tax
+    agi = net_income - se_tax_deduction
+    
+    # Federal income tax brackets 2025 (simplified - single filer)
+    def calculate_income_tax(taxable_income):
+        brackets = [
+            (11600, 0.10),
+            (47150, 0.12),
+            (100525, 0.22),
+            (191950, 0.24),
+            (243725, 0.32),
+            (609350, 0.35),
+            (float('inf'), 0.37)
+        ]
+        tax = 0
+        prev_bracket = 0
+        for bracket, rate in brackets:
+            if taxable_income <= prev_bracket:
+                break
+            taxable_in_bracket = min(taxable_income, bracket) - prev_bracket
+            tax += taxable_in_bracket * rate
+            prev_bracket = bracket
+        return tax
+    
+    # Standard deduction for 2025
+    standard_deduction = 14600
+    taxable_income = max(0, agi - standard_deduction)
+    federal_income_tax = calculate_income_tax(taxable_income)
+    
+    # Total estimated tax
+    total_annual_tax = self_employment_tax + federal_income_tax
+    quarterly_payment = total_annual_tax / 4
+    
+    # Calculate current quarter and next due date
+    now = datetime.now()
+    current_year = now.year
+    
+    # Quarterly due dates
+    due_dates = [
+        {"quarter": "Q1", "period": "Jan 1 - Mar 31", "due_date": f"{current_year}-04-15"},
+        {"quarter": "Q2", "period": "Apr 1 - May 31", "due_date": f"{current_year}-06-15"},
+        {"quarter": "Q3", "period": "Jun 1 - Aug 31", "due_date": f"{current_year}-09-15"},
+        {"quarter": "Q4", "period": "Sep 1 - Dec 31", "due_date": f"{current_year + 1}-01-15"},
+    ]
+    
+    # Determine current quarter
+    month = now.month
+    if month <= 3:
+        current_quarter = 0
+    elif month <= 5:
+        current_quarter = 1
+    elif month <= 8:
+        current_quarter = 2
+    else:
+        current_quarter = 3
+    
+    # Calculate days until next payment
+    for i, q in enumerate(due_dates):
+        due = datetime.strptime(q["due_date"], "%Y-%m-%d")
+        days_left = (due - now).days
+        due_dates[i]["days_until_due"] = max(0, days_left)
+        due_dates[i]["is_past"] = days_left < 0
+        due_dates[i]["is_current"] = i == current_quarter
+        due_dates[i]["payment_amount"] = round(quarterly_payment, 2)
+    
+    # Calculate "pay now vs wait" scenarios
+    months_elapsed = month
+    ytd_income_estimate = (total_income / 12) * months_elapsed if total_income > 0 else 0
+    
+    # Safe harbor calculation (100% of prior year tax - we'll estimate)
+    safe_harbor_payment = round(total_annual_tax / 4, 2)
+    
+    return {
+        "annual_estimate": {
+            "total_income": round(total_income, 2),
+            "total_deductions": round(total_deductions, 2),
+            "net_income": round(net_income, 2),
+            "self_employment_tax": round(self_employment_tax, 2),
+            "federal_income_tax": round(federal_income_tax, 2),
+            "total_tax": round(total_annual_tax, 2)
+        },
+        "quarterly_payment": round(quarterly_payment, 2),
+        "safe_harbor_payment": safe_harbor_payment,
+        "current_quarter": current_quarter + 1,
+        "schedule": due_dates,
+        "tax_rates": {
+            "self_employment": "15.3%",
+            "effective_income": f"{round((federal_income_tax / agi * 100) if agi > 0 else 0, 1)}%",
+            "effective_total": f"{round((total_annual_tax / total_income * 100) if total_income > 0 else 0, 1)}%"
+        },
+        "breakdown": {
+            "gross_income": round(total_income, 2),
+            "expense_deductions": round(total_deductible_expenses, 2),
+            "mileage_deductions": round(total_mileage_deduction, 2),
+            "se_tax_deduction": round(se_tax_deduction, 2),
+            "standard_deduction": standard_deduction,
+            "taxable_income": round(taxable_income, 2)
+        },
+        "tips": [
+            f"Your estimated quarterly payment is ${round(quarterly_payment, 2)}",
+            "Pay quarterly to avoid underpayment penalties (usually 3-5% of underpaid amount)",
+            "Consider increasing deductions to reduce your tax burden",
+            "Keep 25-30% of each payment aside for taxes"
+        ]
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

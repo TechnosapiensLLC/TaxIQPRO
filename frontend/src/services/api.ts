@@ -383,6 +383,22 @@ export const api = {
   },
 
   // ========================================
+  // DEDUCTION MAXIMIZER
+  // ========================================
+  getDeductionAnalysis: async () => {
+    const response = await apiClient.get('/deduction-maximizer');
+    return response.data;
+  },
+
+  // ========================================
+  // QUARTERLY TAX ESTIMATOR
+  // ========================================
+  getQuarterlyEstimate: async () => {
+    const response = await apiClient.get('/quarterly-estimator');
+    return response.data;
+  },
+
+  // ========================================
   // TAX FILING ANALYZER
   // ========================================
   analyzeTaxFiling: async (fileUri: string, fileName: string, fileType: string = 'pdf') => {

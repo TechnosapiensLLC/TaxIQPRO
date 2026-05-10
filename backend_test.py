@@ -635,6 +635,258 @@ startxref
         print(f"{Colors.RED}Traceback: {traceback.format_exc()}{Colors.END}")
         return False
 
+def test_deduction_maximizer():
+    """Test DEDUCTION MAXIMIZER endpoint"""
+    print_test_header("Deduction Maximizer API")
+    
+    try:
+        # Test GET /api/deduction-maximizer
+        print(f"{Colors.YELLOW}Testing GET /api/deduction-maximizer{Colors.END}")
+        response = requests.get(f"{BASE_URL}/deduction-maximizer", headers=HEADERS, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify required fields
+            required_fields = [
+                'deduction_score', 'current_deductions', 'total_income', 'deduction_rate',
+                'profession_detected', 'missing_deductions', 'expense_breakdown', 'tips',
+                'potential_additional_savings', 'receipts_count', 'trips_count'
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                print_result("Response Structure", False, 
+                           f"Missing fields: {', '.join(missing_fields)}")
+                return False
+            
+            print_result("Response Structure", True, "All required fields present")
+            
+            # Verify data types
+            if not isinstance(data['deduction_score'], (int, float)):
+                print_result("Data Type Check", False, "deduction_score is not a number")
+                return False
+            
+            if not (0 <= data['deduction_score'] <= 100):
+                print_result("Data Validation", False, 
+                           f"deduction_score {data['deduction_score']} not between 0-100")
+                return False
+            
+            if not isinstance(data['current_deductions'], dict):
+                print_result("Data Type Check", False, "current_deductions is not an object")
+                return False
+            
+            if not isinstance(data['missing_deductions'], list):
+                print_result("Data Type Check", False, "missing_deductions is not an array")
+                return False
+            
+            print_result("Data Type Check", True, "All data types correct")
+            
+            # Display key data
+            print(f"\n{Colors.BOLD}Deduction Analysis Results:{Colors.END}")
+            print(f"   Deduction Score: {data['deduction_score']}/100")
+            print(f"   Total Income: ${data['total_income']:,.2f}")
+            print(f"   Current Deductions: ${data['current_deductions'].get('total', 0):,.2f}")
+            print(f"   Deduction Rate: {data['deduction_rate']}%")
+            print(f"   Profession Detected: {data['profession_detected']}")
+            print(f"   Potential Additional Savings: ${data['potential_additional_savings']:,.2f}")
+            print(f"   Receipts Count: {data['receipts_count']}")
+            print(f"   Trips Count: {data['trips_count']}")
+            
+            # Check missing deductions structure
+            if len(data['missing_deductions']) > 0:
+                print(f"\n   Missing Deductions ({len(data['missing_deductions'])}):")
+                for i, deduction in enumerate(data['missing_deductions'][:3]):
+                    required_deduction_fields = ['name', 'description', 'avg_value', 'category', 
+                                                'current_tracked', 'potential_savings']
+                    missing_deduction_fields = [f for f in required_deduction_fields if f not in deduction]
+                    
+                    if missing_deduction_fields:
+                        print_result("Missing Deduction Structure", False, 
+                                   f"Missing fields in deduction: {', '.join(missing_deduction_fields)}")
+                        return False
+                    
+                    name = deduction.get('name', 'N/A')
+                    avg_value = deduction.get('avg_value', 0)
+                    potential_savings = deduction.get('potential_savings', 0)
+                    print(f"      {i+1}. {name}: ${avg_value:,.2f} (Potential savings: ${potential_savings:,.2f})")
+                
+                print_result("Missing Deductions Structure", True, "All deduction fields present")
+            
+            # Check tips
+            if isinstance(data['tips'], list) and len(data['tips']) > 0:
+                print(f"\n   Tips ({len(data['tips'])}):")
+                for i, tip in enumerate(data['tips'][:2]):
+                    print(f"      {i+1}. {tip}")
+                print_result("Tips", True, f"Found {len(data['tips'])} tips")
+            
+            print_result("Deduction Maximizer API", True, "All checks passed")
+            return True
+            
+        else:
+            print_result("GET Deduction Maximizer", False, 
+                        f"Status: {response.status_code}, Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print_result("Deduction Maximizer Test", False, f"Error: {str(e)}")
+        import traceback
+        print(f"{Colors.RED}Traceback: {traceback.format_exc()}{Colors.END}")
+        return False
+
+def test_quarterly_estimator():
+    """Test QUARTERLY TAX ESTIMATOR endpoint"""
+    print_test_header("Quarterly Tax Estimator API")
+    
+    try:
+        # Test GET /api/quarterly-estimator
+        print(f"{Colors.YELLOW}Testing GET /api/quarterly-estimator{Colors.END}")
+        response = requests.get(f"{BASE_URL}/quarterly-estimator", headers=HEADERS, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Verify required fields
+            required_fields = [
+                'annual_estimate', 'quarterly_payment', 'safe_harbor_payment',
+                'current_quarter', 'schedule', 'tax_rates', 'breakdown', 'tips'
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                print_result("Response Structure", False, 
+                           f"Missing fields: {', '.join(missing_fields)}")
+                return False
+            
+            print_result("Response Structure", True, "All required fields present")
+            
+            # Verify annual_estimate structure
+            annual_estimate = data['annual_estimate']
+            required_annual_fields = [
+                'total_income', 'total_deductions', 'net_income',
+                'self_employment_tax', 'federal_income_tax', 'total_tax'
+            ]
+            missing_annual_fields = [f for f in required_annual_fields if f not in annual_estimate]
+            
+            if missing_annual_fields:
+                print_result("Annual Estimate Structure", False, 
+                           f"Missing fields: {', '.join(missing_annual_fields)}")
+                return False
+            
+            print_result("Annual Estimate Structure", True, "All fields present")
+            
+            # Verify data types
+            if not isinstance(data['quarterly_payment'], (int, float)):
+                print_result("Data Type Check", False, "quarterly_payment is not a number")
+                return False
+            
+            if not isinstance(data['schedule'], list):
+                print_result("Data Type Check", False, "schedule is not an array")
+                return False
+            
+            if len(data['schedule']) != 4:
+                print_result("Schedule Validation", False, 
+                           f"Expected 4 quarters, got {len(data['schedule'])}")
+                return False
+            
+            print_result("Data Type Check", True, "All data types correct")
+            
+            # Verify calculation: quarterly_payment should be total_tax / 4
+            expected_quarterly = annual_estimate['total_tax'] / 4
+            actual_quarterly = data['quarterly_payment']
+            
+            if abs(expected_quarterly - actual_quarterly) > 0.01:  # Allow small rounding difference
+                print_result("Calculation Validation", False, 
+                           f"quarterly_payment ({actual_quarterly}) != total_tax/4 ({expected_quarterly})")
+                return False
+            
+            print_result("Calculation Validation", True, "quarterly_payment = total_tax / 4")
+            
+            # Display key data
+            print(f"\n{Colors.BOLD}Quarterly Tax Estimate Results:{Colors.END}")
+            print(f"   Total Income: ${annual_estimate['total_income']:,.2f}")
+            print(f"   Total Deductions: ${annual_estimate['total_deductions']:,.2f}")
+            print(f"   Net Income: ${annual_estimate['net_income']:,.2f}")
+            print(f"   Self-Employment Tax: ${annual_estimate['self_employment_tax']:,.2f}")
+            print(f"   Federal Income Tax: ${annual_estimate['federal_income_tax']:,.2f}")
+            print(f"   Total Annual Tax: ${annual_estimate['total_tax']:,.2f}")
+            print(f"   Quarterly Payment: ${data['quarterly_payment']:,.2f}")
+            print(f"   Safe Harbor Payment: ${data['safe_harbor_payment']:,.2f}")
+            print(f"   Current Quarter: Q{data['current_quarter']}")
+            
+            # Verify schedule structure
+            print(f"\n   Payment Schedule:")
+            for i, quarter in enumerate(data['schedule']):
+                required_schedule_fields = [
+                    'quarter', 'period', 'due_date', 'days_until_due',
+                    'is_past', 'is_current', 'payment_amount'
+                ]
+                missing_schedule_fields = [f for f in required_schedule_fields if f not in quarter]
+                
+                if missing_schedule_fields:
+                    print_result("Schedule Structure", False, 
+                               f"Missing fields in quarter {i+1}: {', '.join(missing_schedule_fields)}")
+                    return False
+                
+                quarter_name = quarter.get('quarter', 'N/A')
+                due_date = quarter.get('due_date', 'N/A')
+                days_until = quarter.get('days_until_due', 0)
+                payment = quarter.get('payment_amount', 0)
+                is_current = "← Current" if quarter.get('is_current') else ""
+                print(f"      {quarter_name}: {due_date} ({days_until} days) - ${payment:,.2f} {is_current}")
+            
+            print_result("Schedule Structure", True, "All schedule fields present")
+            
+            # Verify tax_rates structure
+            tax_rates = data['tax_rates']
+            if not all(key in tax_rates for key in ['self_employment', 'effective_income', 'effective_total']):
+                print_result("Tax Rates Structure", False, "Missing tax rate fields")
+                return False
+            
+            print(f"\n   Tax Rates:")
+            print(f"      Self-Employment: {tax_rates['self_employment']}")
+            print(f"      Effective Income: {tax_rates['effective_income']}")
+            print(f"      Effective Total: {tax_rates['effective_total']}")
+            print_result("Tax Rates Structure", True, "All tax rate fields present")
+            
+            # Verify breakdown structure
+            breakdown = data['breakdown']
+            required_breakdown_fields = [
+                'gross_income', 'expense_deductions', 'mileage_deductions',
+                'se_tax_deduction', 'standard_deduction', 'taxable_income'
+            ]
+            missing_breakdown_fields = [f for f in required_breakdown_fields if f not in breakdown]
+            
+            if missing_breakdown_fields:
+                print_result("Breakdown Structure", False, 
+                           f"Missing fields: {', '.join(missing_breakdown_fields)}")
+                return False
+            
+            print_result("Breakdown Structure", True, "All breakdown fields present")
+            
+            # Check tips
+            if isinstance(data['tips'], list) and len(data['tips']) > 0:
+                print(f"\n   Tips ({len(data['tips'])}):")
+                for i, tip in enumerate(data['tips'][:2]):
+                    print(f"      {i+1}. {tip}")
+                print_result("Tips", True, f"Found {len(data['tips'])} tips")
+            
+            print_result("Quarterly Tax Estimator API", True, "All checks passed")
+            return True
+            
+        else:
+            print_result("GET Quarterly Estimator", False, 
+                        f"Status: {response.status_code}, Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print_result("Quarterly Estimator Test", False, f"Error: {str(e)}")
+        import traceback
+        print(f"{Colors.RED}Traceback: {traceback.format_exc()}{Colors.END}")
+        return False
+
 def main():
     """Main testing function"""
     print(f"{Colors.BOLD}{Colors.BLUE}TaxIQ Pro Backend API Testing Suite{Colors.END}")
@@ -651,29 +903,14 @@ def main():
         print(f"\n{Colors.RED}⚠️  API Health Check Failed - Cannot Continue{Colors.END}")
         return
     
-    # Test the 5 premium features as requested
-    print(f"\n{Colors.BOLD}Testing Premium Features:{Colors.END}")
+    # Test the NEW endpoints as requested
+    print(f"\n{Colors.BOLD}Testing NEW Tax Tool Endpoints:{Colors.END}")
     
-    # Feature 3: Auto Trip Settings (GET and POST as specified)
-    results['trip_settings'] = test_trips_settings()
+    # NEW: Deduction Maximizer
+    results['deduction_maximizer'] = test_deduction_maximizer()
     
-    # Feature 5a: Tax Dates (GET as specified)
-    results['tax_dates'] = test_tax_dates()
-    
-    # Feature 5b: Tax Reminders (POST setup-defaults and GET as specified)
-    results['reminders'] = test_reminders()
-    
-    # Feature 4: Trip Classification 
-    results['trip_classification'] = test_trip_classification()
-    
-    # Feature 1: Bank Statement Upload
-    results['bank_statement'] = test_bank_statement_upload()
-    
-    # Feature 2: CSV Import
-    results['csv_import'] = test_csv_import()
-    
-    # Tax Filing Analyzer
-    results['tax_filing_analyzer'] = test_tax_filing_analyzer()
+    # NEW: Quarterly Tax Estimator
+    results['quarterly_estimator'] = test_quarterly_estimator()
     
     # Summary
     print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*60}{Colors.END}")
@@ -690,7 +927,7 @@ def main():
     print(f"\n{Colors.BOLD}Overall: {passed_tests}/{total_tests} tests passed{Colors.END}")
     
     if passed_tests == total_tests:
-        print(f"{Colors.GREEN}{Colors.BOLD}🎉 All tests passed! Premium features working correctly.{Colors.END}")
+        print(f"{Colors.GREEN}{Colors.BOLD}🎉 All tests passed! New endpoints working correctly.{Colors.END}")
     else:
         print(f"{Colors.YELLOW}⚠️  {total_tests - passed_tests} test(s) failed. Check details above.{Colors.END}")
 

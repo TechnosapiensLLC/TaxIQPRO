@@ -127,17 +127,25 @@ export default function SettingsScreen() {
       title: 'Tax Tools',
       items: [
         {
-          icon: 'document-text',
-          label: 'Export Reports',
-          sublabel: 'Schedule C, mileage logs, CPA package',
+          icon: 'trending-up',
+          label: 'Deduction Maximizer',
+          sublabel: 'Find deductions you may be missing',
           color: '#00D9A5',
-          onPress: () => router.push('/export-report'),
+          onPress: () => router.push('/deduction-maximizer'),
         },
         {
           icon: 'calculator',
           label: 'Quarterly Estimates',
-          sublabel: 'View payment schedule',
-          color: '#FF6B6B',
+          sublabel: 'Calculate your estimated tax payments',
+          color: '#7C6BFF',
+          onPress: () => router.push('/quarterly-estimator'),
+        },
+        {
+          icon: 'document-text',
+          label: 'Export Reports',
+          sublabel: 'Schedule C, mileage logs, CPA package',
+          color: '#FFB84D',
+          onPress: () => router.push('/export-report'),
         },
         {
           icon: 'shield-checkmark',
