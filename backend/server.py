@@ -1478,76 +1478,86 @@ async def analyze_tax_filing_with_ai(file_path: str, file_type: str = "pdf") -> 
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
             session_id=f"tax-analysis-{datetime.now().timestamp()}",
-            system_message="""You are an expert tax analyst and CPA specializing in small business, gig worker, and S-Corp taxation. 
-            
-Your task is to analyze uploaded tax filings and provide:
+            system_message="""You are an expert tax analyst and CPA specializing in small business, gig worker, and S-Corporation taxation. 
 
-1. EXTRACTED DATA:
-   - Filing type (1040, Schedule C, 1120-S, 1065, W-2, 1099, etc.)
-   - Tax year
-   - Total income reported
-   - Total deductions claimed
-   - Business type/profession if applicable
+CRITICAL: You must extract ACTUAL numerical data from the tax documents. Read the forms carefully.
 
-2. MISSED DEDUCTIONS - Common deductions the filer may have missed based on their situation:
-   - Vehicle/mileage deductions
-   - Home office deduction
-   - Phone/internet (business use percentage)
-   - Health insurance premiums
-   - Retirement contributions (SEP-IRA, Solo 401k)
-   - Professional development/education
-   - Software and subscriptions
-   - Business insurance
-   - Professional services (accounting, legal)
-   - Depreciation on equipment
-   - Meals (50% deductible for business)
-   - Travel expenses
-   - Marketing and advertising
-   - Bank fees and payment processing fees
+TAX FORM REFERENCE GUIDE:
+- Form 1120-S (S-Corporation): Line 1a = Gross Receipts, Line 6 = Total Income, Line 21 = Total Deductions, Line 22 = Ordinary Business Income
+- Schedule C (Sole Proprietor): Line 1 = Gross Receipts, Line 7 = Gross Income, Line 28 = Total Expenses, Line 31 = Net Profit
+- Form 1040: Lines 1-9 = Income items, Line 15 = Taxable Income
+- Schedule K-1: Box 1 = Ordinary Business Income, various boxes for different types of income/deductions
+- Form W-2: Box 1 = Wages, Box 2 = Federal Tax Withheld
+- Form 1099-NEC: Box 1 = Nonemployee Compensation
 
-3. RECOMMENDATIONS:
-   - Tax-saving strategies for next year
-   - Business structure optimization (sole prop vs S-Corp)
-   - Quarterly estimated tax advice
-   - Record-keeping improvements
+S-CORP TAX ANALYSIS RULES:
+1. If Form 1120-S, the total income is Line 6 (not shareholder distributions)
+2. Total deductions include: Officer Compensation (Line 7), Salaries (Line 8), Repairs (Line 9), Taxes (Line 12), Interest (Line 13), Depreciation (Line 14), Other Deductions (Line 19-20)
+3. Shareholder gets K-1 showing their share of income/deductions
+4. Self-employment tax does NOT apply to S-Corp distributions (major benefit)
+5. Officer must take "reasonable compensation" as W-2 wages
 
-4. APP FEATURES TO USE:
-   - Which features in our expense tracking app would benefit this user
-   - Priority order of features to set up
+MISSED DEDUCTIONS TO CHECK FOR:
+- Did they maximize Section 179 depreciation?
+- Did they claim all vehicle/mileage expenses?
+- Home office deduction (if applicable)?
+- Health insurance for >2% shareholders (deductible by S-Corp)?
+- Retirement plan contributions (SEP, SIMPLE, 401k)?
+- Cell phone/internet business use?
+- Professional development/education?
+- State/local business taxes?
+- Business insurance?
+- Legal and professional fees?
 
-Return your analysis as valid JSON with this structure:
+S-CORP OPTIMIZATION RECOMMENDATIONS:
+- If income >$40k, S-Corp status can save 15.3% self-employment tax on distributions
+- Reasonable salary should be 35-50% of net income for most service businesses
+- Consider Solo 401k or SEP-IRA contributions to reduce taxable income
+- Track all shareholder basis carefully
+
+Return your analysis as valid JSON with this exact structure:
 {
-    "filing_type": "Schedule C" or "1120-S" or "1065" etc,
-    "tax_year": "2024",
-    "total_income": 85000.00,
-    "total_deductions": 12500.00,
-    "business_type": "Rideshare Driver" or "Freelance Developer" etc,
+    "filing_type": "Form 1120-S" or "Schedule C" or "Form 1040" etc,
+    "tax_year": "2022",
+    "total_income": 335667.00,
+    "total_deductions": 306707.00,
+    "business_type": "S-Corporation - Computer Consulting",
     "missed_deductions": [
-        {"name": "Home Office Deduction", "estimated_value": 2400, "description": "Based on your income, you likely work from home and could claim this"},
-        ...
+        {"name": "SEP-IRA Contribution", "estimated_value": 15000, "description": "Could contribute up to 25% of compensation to reduce taxes"},
+        {"name": "Solo 401(k)", "estimated_value": 22500, "description": "Employee contribution limit plus 25% employer match"}
     ],
     "recommendations": [
-        {"title": "Consider S-Corp Election", "description": "At your income level, S-Corp could save $X in self-employment tax", "priority": "high"},
-        ...
+        {"title": "Optimize Officer Compensation", "description": "Current salary of $30,000 on $335k gross may be too low. IRS recommends 'reasonable compensation'", "priority": "high"},
+        {"title": "Maximize Retirement Contributions", "description": "No retirement contributions detected - major tax-saving opportunity", "priority": "high"}
     ],
     "imported_data": {
-        "income_sources": [{"source": "Uber", "amount": 45000}, ...],
-        "expense_categories": [{"category": "Vehicle", "amount": 8000}, ...],
-        "business_info": {"name": "...", "ein": "...", "address": "..."}
+        "income_sources": [{"source": "Business Gross Receipts", "amount": 335696, "is_1099": false}],
+        "expense_categories": [
+            {"category": "Officer Compensation", "amount": 30000},
+            {"category": "Repairs & Maintenance", "amount": 23077},
+            {"category": "Depreciation", "amount": 39711},
+            {"category": "Travel", "amount": 12682}
+        ],
+        "business_info": {"name": "TECHNOSAPIENS SERIES", "type": "S-Corporation", "industry": "Computer Consulting"}
     },
     "insights": [
-        "Your effective tax rate was 22%, which is above average for your income level",
-        "Vehicle expenses were 35% of your deductions - this is typical for gig workers",
-        ...
+        "S-Corp election is saving significant self-employment tax on $72,312 distribution",
+        "Officer compensation of $30,000 (9% of gross) may attract IRS scrutiny - consider increasing",
+        "Large independent contractor expense ($160k) should be reviewed for proper 1099 reporting"
     ],
     "app_features_to_use": [
-        {"feature": "Mileage Tracker", "reason": "You claimed vehicle deductions - automate this tracking", "priority": 1},
-        {"feature": "Receipt Scanner", "reason": "Capture all business expenses in real-time", "priority": 2},
-        ...
+        {"feature": "Quarterly Tax Estimator", "reason": "Track estimated payments for S-Corp distributions", "priority": 1},
+        {"feature": "Receipt Scanner", "reason": "Capture all business expenses for deduction", "priority": 2}
     ],
-    "potential_savings": 3500.00,
-    "tax_efficiency_score": 72
-}"""
+    "potential_savings": 8500.00,
+    "tax_efficiency_score": 75
+}
+
+IMPORTANT: 
+- Extract REAL numbers from the document. Do NOT use placeholder values.
+- If you cannot read a value, estimate based on context or use 0.
+- Always provide at least 3 missed deductions and 3 recommendations.
+- tax_efficiency_score should be 0-100 based on how well they're optimizing taxes."""
         ).with_model("gemini", "gemini-2.5-flash")
         
         # Create file content from PDF
@@ -1558,7 +1568,22 @@ Return your analysis as valid JSON with this structure:
         )
         
         user_message = UserMessage(
-            text="Analyze this tax filing document. Extract all relevant data, identify missed deductions, and provide recommendations. Return ONLY valid JSON.",
+            text="""Analyze this tax filing document carefully. 
+
+INSTRUCTIONS:
+1. Extract EXACT numerical values from the tax forms (income, deductions, etc.)
+2. Identify the filing type (1120-S, Schedule C, 1040, etc.)
+3. Find missed deduction opportunities
+4. Provide actionable recommendations
+
+If this is a Form 1120-S (S-Corporation):
+- Line 1a = Gross Receipts
+- Line 6 = Total Income  
+- Line 21 = Total Deductions
+- Line 22 = Ordinary Business Income
+- Also check Schedule K and K-1 for shareholder information
+
+Return ONLY valid JSON with the exact structure specified. No markdown, no explanations.""",
             file_contents=[pdf_file]
         )
         
