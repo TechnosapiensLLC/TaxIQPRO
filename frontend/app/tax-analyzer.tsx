@@ -125,7 +125,19 @@ export default function TaxAnalyzerScreen() {
 
     try {
       const result = await api.analyzeTaxFiling(uri, name, type);
-      setAnalysis(result);
+      console.log('API Response:', JSON.stringify(result, null, 2));
+      
+      // The API returns { id, filename, analysis } - we need the analysis object
+      // But the response might also be the analysis directly
+      if (result && result.analysis) {
+        setAnalysis(result.analysis);
+      } else if (result && (result.filing_type || result.total_income !== undefined)) {
+        // Direct analysis response
+        setAnalysis(result);
+      } else {
+        console.error('Invalid response structure:', result);
+        Alert.alert('Error', 'Received invalid response from server');
+      }
       setExpandedSection('overview');
     } catch (error: any) {
       console.error('Analysis error:', error);
@@ -160,7 +172,11 @@ export default function TaxAnalyzerScreen() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    // Handle undefined, null, NaN
+    if (amount === undefined || amount === null || isNaN(amount)) {
+      return '$0';
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -282,26 +298,26 @@ export default function TaxAnalyzerScreen() {
           <View style={styles.overviewGrid}>
             <View style={styles.overviewItem}>
               <Text style={styles.overviewLabel}>Filing Type</Text>
-              <Text style={styles.overviewValue}>{analysis.filing_type}</Text>
+              <Text style={styles.overviewValue}>{analysis.filing_type || 'Not detected'}</Text>
             </View>
             <View style={styles.overviewItem}>
               <Text style={styles.overviewLabel}>Tax Year</Text>
-              <Text style={styles.overviewValue}>{analysis.tax_year}</Text>
+              <Text style={styles.overviewValue}>{analysis.tax_year || 'Unknown'}</Text>
             </View>
             <View style={styles.overviewItem}>
               <Text style={styles.overviewLabel}>Business Type</Text>
-              <Text style={styles.overviewValue}>{analysis.business_type}</Text>
+              <Text style={styles.overviewValue}>{analysis.business_type || 'Self-employed'}</Text>
             </View>
             <View style={styles.overviewItem}>
               <Text style={styles.overviewLabel}>Total Income</Text>
               <Text style={[styles.overviewValue, styles.incomeValue]}>
-                {formatCurrency(analysis.total_income)}
+                {formatCurrency(analysis.total_income || 0)}
               </Text>
             </View>
             <View style={styles.overviewItem}>
               <Text style={styles.overviewLabel}>Total Deductions</Text>
               <Text style={[styles.overviewValue, styles.deductionValue]}>
-                {formatCurrency(analysis.total_deductions)}
+                {formatCurrency(analysis.total_deductions || 0)}
               </Text>
             </View>
             <View style={styles.overviewItem}>
