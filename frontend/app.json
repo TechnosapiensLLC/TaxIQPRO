@@ -17,7 +17,8 @@
         "NSPhotoLibraryUsageDescription": "Upload receipt photos from your gallery",
         "NSMotionUsageDescription": "Detect vehicle motion for automatic trip logging",
         "NSFaceIDUsageDescription": "Secure login with Face ID"
-      }
+      },
+      "bundleIdentifier": "com.emergent.quickrevenueapps.gh3w0j"
     },
     "android": {
       "adaptiveIcon": {
@@ -34,7 +35,8 @@
         "USE_BIOMETRIC",
         "USE_FINGERPRINT",
         "ACTIVITY_RECOGNITION"
-      ]
+      ],
+      "package": "com.emergent.quickrevenueapps.gh3w0j"
     },
     "web": {
       "bundler": "metro",
