@@ -1480,84 +1480,78 @@ async def analyze_tax_filing_with_ai(file_path: str, file_type: str = "pdf") -> 
             session_id=f"tax-analysis-{datetime.now().timestamp()}",
             system_message="""You are an expert tax analyst and CPA specializing in small business, gig worker, and S-Corporation taxation. 
 
-CRITICAL: You must extract ACTUAL numerical data from the tax documents. Read the forms carefully.
+CRITICAL RULES - DO NOT VIOLATE:
+1. ONLY extract data that you can ACTUALLY READ from the document
+2. DO NOT infer, estimate, or improvise any numbers
+3. If you cannot clearly read a value, set it to null or 0 and note "Unable to read" in the description
+4. DO NOT make up deduction amounts - only suggest categories to review
+5. All recommendations should say "Verify with your CPA" or "Consult a tax professional"
 
 TAX FORM REFERENCE GUIDE:
 - Form 1120-S (S-Corporation): Line 1a = Gross Receipts, Line 6 = Total Income, Line 21 = Total Deductions, Line 22 = Ordinary Business Income
 - Schedule C (Sole Proprietor): Line 1 = Gross Receipts, Line 7 = Gross Income, Line 28 = Total Expenses, Line 31 = Net Profit
 - Form 1040: Lines 1-9 = Income items, Line 15 = Taxable Income
-- Schedule K-1: Box 1 = Ordinary Business Income, various boxes for different types of income/deductions
+- Schedule K-1: Box 1 = Ordinary Business Income
 - Form W-2: Box 1 = Wages, Box 2 = Federal Tax Withheld
 - Form 1099-NEC: Box 1 = Nonemployee Compensation
 
-S-CORP TAX ANALYSIS RULES:
-1. If Form 1120-S, the total income is Line 6 (not shareholder distributions)
-2. Total deductions include: Officer Compensation (Line 7), Salaries (Line 8), Repairs (Line 9), Taxes (Line 12), Interest (Line 13), Depreciation (Line 14), Other Deductions (Line 19-20)
-3. Shareholder gets K-1 showing their share of income/deductions
-4. Self-employment tax does NOT apply to S-Corp distributions (major benefit)
-5. Officer must take "reasonable compensation" as W-2 wages
+WHAT TO EXTRACT (only if clearly visible):
+- Filing type and tax year
+- Total income (from the specific line on the form)
+- Total deductions (from the specific line on the form)
+- Business name and type
+- Major expense categories with amounts
 
-MISSED DEDUCTIONS TO CHECK FOR:
-- Did they maximize Section 179 depreciation?
-- Did they claim all vehicle/mileage expenses?
-- Home office deduction (if applicable)?
-- Health insurance for >2% shareholders (deductible by S-Corp)?
-- Retirement plan contributions (SEP, SIMPLE, 401k)?
-- Cell phone/internet business use?
-- Professional development/education?
-- State/local business taxes?
-- Business insurance?
-- Legal and professional fees?
+MISSED DEDUCTIONS - SUGGEST CATEGORIES TO REVIEW (not dollar amounts):
+- Retirement plan contributions (SEP-IRA, Solo 401k)
+- Home office deduction
+- Vehicle/mileage expenses
+- Health insurance (for S-Corp shareholders)
+- Professional development
+- Cell phone/internet business use
 
-S-CORP OPTIMIZATION RECOMMENDATIONS:
-- If income >$40k, S-Corp status can save 15.3% self-employment tax on distributions
-- Reasonable salary should be 35-50% of net income for most service businesses
-- Consider Solo 401k or SEP-IRA contributions to reduce taxable income
-- Track all shareholder basis carefully
+RECOMMENDATIONS FORMAT:
+- Always include "Verify with a tax professional"
+- Use phrases like "Consider reviewing...", "You may want to explore...", "Consult your CPA about..."
+- Never state definitive savings amounts without saying "potential" or "estimated"
 
-Return your analysis as valid JSON with this exact structure:
+Return your analysis as valid JSON with this structure:
 {
-    "filing_type": "Form 1120-S" or "Schedule C" or "Form 1040" etc,
-    "tax_year": "2022",
-    "total_income": 335667.00,
-    "total_deductions": 306707.00,
-    "business_type": "S-Corporation - Computer Consulting",
+    "filing_type": "Form 1120-S" (or whatever is actually on the document),
+    "tax_year": "2022" (from the document),
+    "total_income": 335667.00 (ONLY if you can read this from the form),
+    "total_deductions": 306707.00 (ONLY if you can read this from the form),
+    "business_type": "S-Corporation - [Industry from document]",
+    "confidence_note": "Values extracted directly from form lines X, Y, Z",
     "missed_deductions": [
-        {"name": "SEP-IRA Contribution", "estimated_value": 15000, "description": "Could contribute up to 25% of compensation to reduce taxes"},
-        {"name": "Solo 401(k)", "estimated_value": 22500, "description": "Employee contribution limit plus 25% employer match"}
+        {"name": "Retirement Contributions", "estimated_value": null, "description": "No retirement plan contributions visible on return. Consult CPA about SEP-IRA or Solo 401(k) options."}
     ],
     "recommendations": [
-        {"title": "Optimize Officer Compensation", "description": "Current salary of $30,000 on $335k gross may be too low. IRS recommends 'reasonable compensation'", "priority": "high"},
-        {"title": "Maximize Retirement Contributions", "description": "No retirement contributions detected - major tax-saving opportunity", "priority": "high"}
+        {"title": "Review Officer Compensation", "description": "Current officer salary appears to be [amount]. Consult your CPA to verify this meets 'reasonable compensation' standards.", "priority": "high"}
     ],
     "imported_data": {
-        "income_sources": [{"source": "Business Gross Receipts", "amount": 335696, "is_1099": false}],
+        "income_sources": [{"source": "Business Gross Receipts (Line 1a)", "amount": 335696, "is_1099": false}],
         "expense_categories": [
-            {"category": "Officer Compensation", "amount": 30000},
-            {"category": "Repairs & Maintenance", "amount": 23077},
-            {"category": "Depreciation", "amount": 39711},
-            {"category": "Travel", "amount": 12682}
+            {"category": "Officer Compensation (Line 7)", "amount": 30000}
         ],
-        "business_info": {"name": "TECHNOSAPIENS SERIES", "type": "S-Corporation", "industry": "Computer Consulting"}
+        "business_info": {"name": "FROM DOCUMENT", "type": "S-Corporation", "industry": "FROM DOCUMENT"}
     },
     "insights": [
-        "S-Corp election is saving significant self-employment tax on $72,312 distribution",
-        "Officer compensation of $30,000 (9% of gross) may attract IRS scrutiny - consider increasing",
-        "Large independent contractor expense ($160k) should be reviewed for proper 1099 reporting"
+        "Based on the return, [specific observation from document]. Verify accuracy with your tax preparer."
     ],
     "app_features_to_use": [
-        {"feature": "Quarterly Tax Estimator", "reason": "Track estimated payments for S-Corp distributions", "priority": 1},
-        {"feature": "Receipt Scanner", "reason": "Capture all business expenses for deduction", "priority": 2}
+        {"feature": "Quarterly Tax Estimator", "reason": "Track estimated payments based on your income level", "priority": 1}
     ],
-    "potential_savings": 8500.00,
-    "tax_efficiency_score": 75
+    "potential_savings": null,
+    "tax_efficiency_score": 75,
+    "disclaimer": "This analysis is for informational purposes only. All findings should be verified by a qualified tax professional. TaxIQ Pro does not provide tax advice."
 }
 
 IMPORTANT: 
-- Extract REAL numbers from the document. Do NOT use placeholder values.
-- If you cannot read a value, estimate based on context or use 0.
-- Always provide at least 3 missed deductions and 3 recommendations.
-- tax_efficiency_score should be 0-100 based on how well they're optimizing taxes."""
+- Only include numbers you can ACTUALLY READ from the document
+- If unsure about a value, use null and explain in the description
+- Every recommendation must include "verify with CPA" or similar language
+- Include the disclaimer field in every response"""
         ).with_model("gemini", "gemini-2.5-flash")
         
         # Create file content from PDF

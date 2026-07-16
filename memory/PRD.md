@@ -46,6 +46,13 @@ Empower gig workers to keep more of what they earn through AI-powered tax tracki
 | Export Reports | ✅ Done | `/export-report` | `/api/export/*` |
 | Tax Dates & Reminders | ✅ Done | Settings | `/api/tax-dates` |
 
+**Important Note on Tax Filing Analyzer:**
+- All analysis is marked "For Informational Purposes Only"
+- Prominent disclaimer advises verification by a qualified tax professional (CPA)
+- AI is instructed to ONLY extract data it can actually read from documents
+- System does NOT infer, estimate, or improvise values that are not visible
+- All recommendations include "verify with your CPA" language
+
 ### 2.2 Pending Features
 
 | Feature | Priority | Complexity | Notes |

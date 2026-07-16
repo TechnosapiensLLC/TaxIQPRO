@@ -269,6 +269,17 @@ export default function TaxAnalyzerScreen() {
 
     return (
       <View style={styles.resultsContainer}>
+        {/* Important Disclaimer Banner */}
+        <View style={styles.disclaimerBanner}>
+          <Ionicons name="warning" size={20} color="#FFB84D" />
+          <View style={styles.disclaimerContent}>
+            <Text style={styles.disclaimerTitle}>For Informational Purposes Only</Text>
+            <Text style={styles.disclaimerText}>
+              This analysis is based on document data and should be verified by a qualified tax professional (CPA) before making any tax decisions.
+            </Text>
+          </View>
+        </View>
+
         {/* Tax Efficiency Score */}
         <View style={styles.scoreCard}>
           <View style={styles.scoreCircle}>
@@ -632,6 +643,32 @@ const styles = StyleSheet.create({
   // Results
   resultsContainer: {
     paddingTop: 10,
+  },
+  // Disclaimer Banner
+  disclaimerBanner: {
+    flexDirection: 'row',
+    backgroundColor: '#FFB84D15',
+    borderWidth: 1,
+    borderColor: '#FFB84D40',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  disclaimerContent: {
+    flex: 1,
+  },
+  disclaimerTitle: {
+    color: '#FFB84D',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  disclaimerText: {
+    color: '#B8A070',
+    fontSize: 12,
+    lineHeight: 18,
   },
   // Score Card
   scoreCard: {
