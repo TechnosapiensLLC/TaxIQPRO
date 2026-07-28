@@ -723,6 +723,14 @@ TaxIQ Pro is a mobile-first tax assistant that **automates the hard parts** of g
 
 ## 13. Competitive Positioning
 
+### Strategic Position: "Prep Tool Today, Filing Solution Tomorrow"
+
+**Current Positioning (Phase 1):**
+> "The year-round tax assistant that helps you PREPARE better than TurboTax"
+
+**Future Positioning (Phase 3):**
+> "The only tax solution built specifically for gig workers — from tracking to filing"
+
 ### Competitive Landscape
 
 | Competitor | Strengths | Weaknesses | TaxIQ Pro Advantage |
@@ -734,14 +742,40 @@ TaxIQ Pro is a mobile-first tax assistant that **automates the hard parts** of g
 | **Hurdlr** | Comprehensive | $10/mo, complex for casual users | Simpler UX, profession-specific |
 | **Generic expense apps** | General purpose | No tax focus | Built for taxes first |
 
+### Honest Gap Analysis
+
+**What TurboTax Does That We DON'T (Yet):**
+
+| Feature | TurboTax | TaxIQ Pro | When We'll Add |
+|---------|----------|-----------|----------------|
+| Actually files taxes | ✅ Full e-file | ❌ Not yet | Phase 3 (Month 12) |
+| W-2/1099 auto-import | ✅ From employers | ❌ Manual | Phase 2 (Month 6) |
+| Audit protection | ✅ $49 add-on | ❌ None | Phase 3 (Month 14) |
+| State tax filing | ✅ All 50 states | ❌ None | Phase 3b (Month 18) |
+| Max refund guarantee | ✅ Legal guarantee | ❌ None | Phase 3 (Month 14) |
+
+**What We Do BETTER Than TurboTax:**
+
+| Feature | TaxIQ Pro | TurboTax | Advantage |
+|---------|-----------|----------|-----------|
+| Year-round tracking | ✅ Always on | ❌ Tax season only | 🟢 Strong |
+| Real-time GPS mileage | ✅ Auto-track | ❌ Manual entry | 🟢 Strong |
+| Gig-worker specialized | ✅ Built for 1099 | ⚠️ Generic | 🟢 Strong |
+| Mobile-first UX | ✅ Native app | ⚠️ Web-first | 🟢 Strong |
+| AI receipt scanning | ✅ Real-time | ❌ None | 🟢 Strong |
+| Price (tracking) | $9.99/mo | N/A | 🟢 Strong |
+| Deduction coaching | ✅ Proactive | ⚠️ Reactive | 🟢 Moderate |
+
 ### Positioning Matrix
 
 ```
                         HIGH TAX INTELLIGENCE
                                │
                     TaxIQ Pro  │  TurboTax SE
-                        ●      │      ●
-                               │
+                      (Future) │      ●
+                        ◐──────│
+                    TaxIQ Pro  │
+                      (Today)  │
      LOW PRICE ────────────────┼──────────────── HIGH PRICE
                                │
                    Stride ●    │    ● QuickBooks
@@ -749,99 +783,298 @@ TaxIQ Pro is a mobile-first tax assistant that **automates the hard parts** of g
                         LOW TAX INTELLIGENCE
 ```
 
-### Why We Win
+### Competitive Strategy by Phase
 
-1. **AI-First Design** — Competitors added AI as afterthought; we built around it
-2. **Profession-Specific** — Rideshare driver gets different experience than freelance dev
-3. **Tax-Outcome Focused** — Every feature ties to "save more on taxes"
-4. **Year-Round Value** — Not just for tax season; value every day
-5. **Modern UX** — Built in 2026, not adapted from 2010 desktop software
+**Phase 1 (Now): Complement TurboTax**
+- Message: "Prepare all year, file anywhere"
+- Tactic: TurboTax-compatible export
+- Goal: Be the best front-end for TurboTax users
+
+**Phase 2 (Month 5-8): CPA Alternative**
+- Message: "Skip TurboTax, file with a real CPA"
+- Tactic: CPA marketplace with pre-organized data
+- Goal: Capture users who want human review
+
+**Phase 3 (Month 12+): Replace TurboTax**
+- Message: "Everything TurboTax does, built for gig workers, half the price"
+- Tactic: Full e-filing at $99/year
+- Goal: Direct TurboTax competitor for 1099 workers
+
+### Why We Win Long-Term
+
+1. **Specialization** — TurboTax serves everyone; we serve gig workers perfectly
+2. **Year-round relationship** — They see users 1x/year; we see them daily
+3. **AI-native** — Built with AI from day 1, not bolted on
+4. **Mobile-first** — Gig workers live on phones; TurboTax is desktop-first
+5. **Price** — We can be profitable at $99/year; TurboTax charges $200+
 
 ---
 
 ## 14. Financial Model
 
-### 5-Year P&L Projection
+### Revenue Model Evolution
+
+```
+PHASE 1 (Now)              PHASE 2 (Month 5)           PHASE 3 (Month 12)
+─────────────              ─────────────               ─────────────
+
+Free: Basic tracking       Free: Basic tracking        Free: Basic tracking
+                          
+Pro: $9.99/mo             Pro: $9.99/mo               Pro: $9.99/mo
+• AI features             • AI features               • AI features
+• Unlimited receipts      • Unlimited receipts        • Unlimited receipts
+                          
+Max: $19.99/mo            Max: $19.99/mo              File: $99/year
+• Bank statement AI       • Bank statement AI         • Federal e-filing
+• Tax filing analyzer     • Tax filing analyzer       • Direct deposit
+                          • CPA marketplace access    • Audit protection
+                          
+                          CPA Referral: $30/filing    File+State: $129/year
+                          (revenue share)             • Federal + 1 state
+```
+
+### 5-Year P&L Projection (Phased Approach)
 
 | Line Item | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 |
 |-----------|--------|--------|--------|--------|--------|
-| **Users (EOY)** | 75,000 | 250,000 | 600,000 | 1,200,000 | 2,000,000 |
-| **Paid Users** | 6,000 | 22,500 | 60,000 | 132,000 | 240,000 |
-| **Conversion Rate** | 8.0% | 9.0% | 10.0% | 11.0% | 12.0% |
-| **ARPU (Monthly)** | $8.50 | $9.00 | $9.50 | $10.00 | $10.50 |
+| | *Prep Tool* | *+CPA Mkt* | *+E-Filing* | *Scale* | *Expand* |
+| **Users (EOY)** | 75,000 | 200,000 | 500,000 | 900,000 | 1,500,000 |
+| **Paid Subscribers** | 6,000 | 18,000 | 45,000 | 90,000 | 150,000 |
+| **E-Filing Users** | — | — | 15,000 | 50,000 | 100,000 |
+| **CPA Referrals** | — | 3,000 | 8,000 | 5,000 | 3,000 |
 | | | | | | |
-| **Revenue** | $612K | $2.43M | $6.84M | $15.84M | $30.24M |
+| **Subscription Revenue** | $612K | $1.94M | $4.86M | $9.72M | $16.2M |
+| **E-Filing Revenue** | — | — | $1.49M | $4.95M | $9.9M |
+| **CPA Referral Revenue** | — | $90K | $240K | $150K | $90K |
+| **Total Revenue** | $612K | $2.03M | $6.59M | $14.82M | $26.19M |
 | | | | | | |
-| **COGS (AI/Cloud)** | $92K | $365K | $1.03M | $2.38M | $4.54M |
-| **Gross Profit** | $520K | $2.07M | $5.81M | $13.46M | $25.70M |
-| **Gross Margin** | 85% | 85% | 85% | 85% | 85% |
+| **COGS (AI/Cloud/IRS)** | $92K | $305K | $1.32M | $2.97M | $5.24M |
+| **Gross Profit** | $520K | $1.73M | $5.27M | $11.85M | $20.95M |
+| **Gross Margin** | 85% | 85% | 80% | 80% | 80% |
 | | | | | | |
-| **Engineering** | $450K | $750K | $1.2M | $1.8M | $2.5M |
-| **Marketing** | $300K | $800K | $1.5M | $3.0M | $5.0M |
-| **Operations** | $150K | $300K | $500K | $800K | $1.2M |
-| **G&A** | $100K | $200K | $400K | $700K | $1.0M |
-| **Total OpEx** | $1.0M | $2.05M | $3.6M | $6.3M | $9.7M |
+| **Engineering** | $450K | $900K | $1.5M | $2.2M | $3.0M |
+| **Marketing** | $300K | $600K | $1.2M | $2.5M | $4.0M |
+| **Operations** | $150K | $350K | $700K | $1.2M | $1.8M |
+| **G&A** | $100K | $200K | $400K | $600K | $900K |
+| **Total OpEx** | $1.0M | $2.05M | $3.8M | $6.5M | $9.7M |
 | | | | | | |
-| **EBITDA** | -$480K | $20K | $2.21M | $7.16M | $16.0M |
-| **EBITDA Margin** | -78% | 1% | 32% | 45% | 53% |
+| **EBITDA** | -$480K | -$320K | $1.47M | $5.35M | $11.25M |
+| **EBITDA Margin** | -78% | -16% | 22% | 36% | 43% |
 
-### Unit Economics
+### Revenue Mix by Year
 
-| Metric | Current | Target (Month 12) |
-|--------|---------|-------------------|
-| **CAC** | $35 | $25 |
-| **LTV** | $72 | $102 |
-| **LTV:CAC** | 2.1:1 | 4.1:1 |
-| **Payback Period** | 4.1 months | 2.9 months |
-| **Monthly Churn** | 5% | 3% |
-| **Net Revenue Retention** | 95% | 110% |
+```
+Year 1: 100% Subscriptions
+        ████████████████████████████████████████ $612K
 
-### Funding Requirements
+Year 2: 96% Subscriptions + 4% CPA Referrals
+        ████████████████████████████████████████ $1.94M
+        ██ $90K
 
-| Round | Amount | Use of Funds | Timeline |
-|-------|--------|--------------|----------|
-| **Pre-Seed** (current) | $500K | MVP → 75K users | Months 1-12 |
-| **Seed** | $2M | Scale to 250K users, hire team | Months 12-24 |
-| **Series A** | $8M | National expansion, enterprise | Months 24-36 |
+Year 3: 74% Subscriptions + 23% E-Filing + 3% CPA
+        ██████████████████████████████ $4.86M
+        █████████ $1.49M
+        █ $240K
+
+Year 5: 62% Subscriptions + 38% E-Filing
+        █████████████████████████ $16.2M
+        ███████████████ $9.9M
+```
+
+### Unit Economics by Phase
+
+| Metric | Phase 1 | Phase 2 | Phase 3 |
+|--------|---------|---------|---------|
+| **ARPU (Monthly)** | $8.50 | $9.40 | $12.50 |
+| **CAC** | $35 | $30 | $28 |
+| **LTV** | $72 | $94 | $156 |
+| **LTV:CAC** | 2.1:1 | 3.1:1 | 5.6:1 |
+| **Payback (months)** | 4.1 | 3.2 | 2.2 |
+| **Monthly Churn** | 5% | 4% | 2.5% |
+
+### E-Filing Economics (Phase 3)
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **E-File Price** | $99/year | vs TurboTax $169 |
+| **IRS API Cost** | ~$3/filing | Free File Alliance |
+| **Support Cost** | ~$8/filing | 10 min avg @ $48/hr |
+| **E&O Insurance** | ~$2/filing | $50K policy |
+| **Gross Margin** | **87%** | $86 profit/filing |
+
+### Funding Requirements (Updated)
+
+| Round | Amount | Use of Funds | Milestone |
+|-------|--------|--------------|-----------|
+| **Pre-Seed** | $500K | Phase 1: MVP → 75K users | Prove tracking demand |
+| **Seed** | $2.5M | Phase 2-3: CPA + E-Filing | 200K users, e-filing live |
+| **Series A** | $10M | Scale e-filing nationally | 500K users, $5M ARR |
+
+### Path to Profitability
+
+```
+Revenue vs Expenses ($M)
+
+$12M ┤                                           ╭──── Revenue
+     │                                      ╭────╯
+$10M ┤                                 ╭────╯
+     │                            ╭────╯
+ $8M ┤                       ╭────╯
+     │                  ╭────╯
+ $6M ┤             ╭────╯
+     │        ╭────╯        ┌──── Expenses
+ $4M ┤   ╭────╯        ┌────┴────┐
+     │   │        ┌────┘         └────┐
+ $2M ┤───┴────────┘                   └────
+     │   ↑                    ↑
+ $0M ┼───┼────────────────────┼─────────────
+     │  Y1                   Y3
+     │         BREAKEVEN ────╯
+```
+
+**Breakeven:** Month 28 (early Year 3) with e-filing revenue
 
 ---
 
 ## 15. Roadmap Timeline
 
+### Strategic Direction: "Best Prep Tool → Full Filing Solution"
+
+**Philosophy:** Launch as the best tax preparation and tracking tool, validate demand, then expand to full e-filing.
+
+### Phase Overview
+
+```
+PHASE 1: PREP TOOL          PHASE 2: CPA BRIDGE         PHASE 3: E-FILING
+(Months 0-4)                (Months 5-8)                (Months 9-14)
+────────────────            ────────────────            ────────────────
+
+✅ Year-round tracking      • CPA marketplace           • IRS Free File API
+✅ AI receipt scanning      • "File with Pro" button    • Schedule C e-filing  
+✅ Mileage tracking         • Referral revenue ($30)    • Direct deposit refund
+✅ Tax filing analyzer      • Validate filing demand    • Audit protection add-on
+✅ Quarterly estimator      • TurboTax export format    • State filing (Phase 3b)
+
+REVENUE: $10/user/mo        REVENUE: $10 + $30 ref      REVENUE: $99/user/year
+GOAL: 75K users             GOAL: 150K users            GOAL: 300K users
+                            GOAL: 5K CPA referrals      GOAL: 50K e-files
+```
+
+### Detailed Milestone Timeline
+
+| Month | Milestone | Deliverable | Success Metric |
+|-------|-----------|-------------|----------------|
+| **0** | MVP Complete | ✅ All core features working | App functional |
+| **1** | App Store Launch | iOS + Android live | 1,000 downloads |
+| **2** | Growth Phase 1 | Marketing campaign | 5,000 users |
+| **3** | TurboTax Export | Compatible export format | 500 exports |
+| **4** | Traction Validation | Prove retention | <5% monthly churn |
+| **5** | CPA Marketplace MVP | Partner with 10 CPAs | Beta launch |
+| **6** | CPA Marketplace Launch | "File with a Pro" button | 100 referrals |
+| **7** | Tax Season Prep | Q4 marketing push | 50,000 users |
+| **8** | Tax Season 2027 | CPA referral revenue | 2,000 referrals |
+| **9** | E-Filing Research | IRS Free File API integration plan | Technical spec |
+| **10** | E-Filing Development | Schedule C filing MVP | Internal testing |
+| **12** | E-Filing Beta | Limited beta with 100 users | 95% success rate |
+| **14** | E-Filing Launch | Full Schedule C e-filing | 10,000 e-files |
+
 ### Gantt-Style Overview
 
 ```
-2026                                    2027                     2028
+2026                                    2027                         2028
 Q3      Q4      Q1      Q2      Q3      Q4      Q1      Q2      
 ├───────┼───────┼───────┼───────┼───────┼───────┼───────┼───────┤
 
-MVP COMPLETE ████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-             ↑ We are here
+PHASE 1: PREP TOOL
+████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+↑ We are here
 
-APP STORE LAUNCH    ███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+PHASE 2: CPA MARKETPLACE
+            ████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-GROWTH PHASE            ██████████████████░░░░░░░░░░░░░░░░░░░░░
+TAX SEASON 2027 (CPA REFERRALS)
+                        ████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-TAX SEASON 2027                     ████████░░░░░░░░░░░░░░░░░░░
+PHASE 3: E-FILING DEVELOPMENT
+                                ████████████████████░░░░░░░░░░░
 
-ENTERPRISE/CPA TIER                         ██████████████████░
+E-FILING LAUNCH
+                                                ████████████████
 
-SERIES A                                            ███░░░░░░░░
+SEED ROUND
+                ███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+SERIES A
+                                                        ███░░░░
 ```
 
-### Detailed Milestones
+### Phase 1: Best Prep Tool (NOW - Month 4)
 
-| Phase | Timeline | Milestone | Success Criteria |
-|-------|----------|-----------|------------------|
-| **MVP** | Now | Feature complete | All core features working |
-| **Launch** | +2 weeks | App Store live | iOS + Android approved |
-| **Traction** | +3 months | 5,000 users | 400 paid |
-| **Growth** | +6 months | 35,000 users | 2,800 paid, <4% churn |
-| **Tax Season** | +9 months | Tax season campaign | 2x signups in Q1 2027 |
-| **Scale** | +12 months | 75,000 users | $50K MRR |
-| **Seed Close** | +14 months | $2M raised | 12-month runway |
-| **Team Build** | +18 months | 15 FTEs | Engineering, Marketing, Support |
-| **Series A** | +24 months | $8M raised | 250K users, path to profitability |
+**Goal:** Prove that gig workers will pay for year-round tax tracking.
+
+| Task | Priority | Status | Owner |
+|------|----------|--------|-------|
+| Complete MVP testing | P0 | ✅ Done | Engineering |
+| Add app.json permissions | P0 | Pending | Engineering |
+| App Store submission | P0 | Next | Engineering |
+| TurboTax-compatible export | P1 | Planned | Engineering |
+| Marketing launch | P1 | Planned | Growth |
+| Reach 5,000 users | P1 | Goal | Growth |
+| Prove <5% churn | P1 | Goal | Product |
+
+**Key Metrics to Validate:**
+- Users willing to pay $9.99/mo for tracking alone
+- Users actually export data at tax time
+- Retention through non-tax-season months
+
+### Phase 2: CPA Marketplace Bridge (Month 5-8)
+
+**Goal:** Test filing demand without building e-filing infrastructure.
+
+| Feature | Description | Revenue Model |
+|---------|-------------|---------------|
+| CPA Directory | Vetted CPAs who understand gig workers | Free listing |
+| "File with a Pro" Button | One-click send data to CPA | $30 referral fee |
+| CPA Dashboard | CPAs see client's organized data | $50/mo subscription |
+| Review Service | CPA reviews our AI analysis | $49 add-on |
+
+**Why This Phase Matters:**
+1. **Validates demand** — If users pay CPAs through us, they'll pay for e-filing
+2. **Generates revenue** — $30/referral × 5,000 referrals = $150K
+3. **Lowers risk** — CPAs handle liability, not us
+4. **Builds relationships** — CPAs become advocates
+
+### Phase 3: E-Filing (Month 9-14)
+
+**Goal:** Replace TurboTax for simple gig worker returns.
+
+| Milestone | Technical Requirement | Timeline |
+|-----------|----------------------|----------|
+| IRS Free File Integration | Apply for Free File Alliance or use Modernized e-File | Month 9-10 |
+| Schedule C Only | Form 1040 + Schedule C + SE Tax | Month 10-12 |
+| No-Income-Tax States | TX, FL, WA, NV, TN, WY, SD | Month 12 |
+| Refund Direct Deposit | Bank account integration | Month 12 |
+| Beta Launch | 100 users, manual review | Month 12 |
+| Full Launch | Automated filing | Month 14 |
+| State Filing | CA, NY first | Month 18 |
+
+**E-Filing Revenue Model:**
+- Free: Track only (current)
+- Pro ($9.99/mo): AI features + tracking
+- **File ($99/year)**: Federal e-filing included
+- File + State ($129/year): Federal + 1 state
+
+### Risk Mitigation by Phase
+
+| Phase | Key Risk | Mitigation |
+|-------|----------|------------|
+| **1** | Low adoption | Focus marketing on tax season pain points |
+| **1** | TurboTax copies features | Speed to market, brand building |
+| **2** | CPAs don't partner | Offer free tools, generous rev share |
+| **2** | Low referral conversion | A/B test CTA placement |
+| **3** | IRS API complexity | Hire tax software consultant |
+| **3** | Filing errors | E&O insurance, manual review initially |
+| **3** | State tax complexity | Start with no-income-tax states |
 
 ---
 
@@ -955,48 +1188,86 @@ SERIES A                                            ███░░░░░░�
 
 # TaxIQ Pro
 
-### AI-Powered Tax Assistant for the Gig Economy
+### The Gig Economy's Tax Solution — From Tracking to Filing
 
 ---
 
 **The Problem**  
-59 million US gig workers overpay taxes by an average of $5,700/year due to missed deductions and tax confusion.
+59 million US gig workers overpay taxes by $5,700/year. TurboTax charges $200+ and only helps at tax time. There's no year-round solution built FOR gig workers.
 
 **The Solution**  
-TaxIQ Pro is a mobile app that uses AI to automatically track deductions, analyze tax filings, and provide personalized tax-saving strategies.
+TaxIQ Pro is the mobile-first tax assistant that helps gig workers track deductions year-round, then file taxes at half the cost of TurboTax.
+
+**Strategic Vision**
+```
+TODAY                    YEAR 1                     YEAR 2+
+─────                    ──────                     ───────
+Best Prep Tool    →      + CPA Marketplace    →    Full E-Filing
+(Track & Export)         (Human filing option)     (Replace TurboTax)
+```
 
 **Traction**  
-- MVP complete with 15+ features
-- AI-powered receipt scanning, mileage tracking, tax filing analysis
-- Ready for App Store launch
+- ✅ MVP complete with 15+ AI-powered features
+- ✅ Real-time mileage, receipt scanning, tax filing analyzer
+- ✅ Ready for App Store launch
 
-**Business Model**  
-Freemium SaaS: Free tier → Pro ($9.99/mo) → Max ($19.99/mo)
-- Target conversion: 8%
-- Target LTV:CAC: 4:1
+**Business Model**
+| Phase | Revenue Stream | Unit Economics |
+|-------|---------------|----------------|
+| Now | Subscriptions ($9.99/mo) | LTV:CAC 2.1:1 |
+| Year 1 | + CPA Referrals ($30/filing) | LTV:CAC 3.1:1 |
+| Year 2 | + E-Filing ($99/year) | LTV:CAC 5.6:1 |
 
 **Market**  
-- TAM: 59M gig workers
-- SAM: 34M needing tax help
-- SOM: 12.8M mobile-first users
+- TAM: 59M gig workers × $200 = **$11.8B**
+- SAM: 34M needing tax help = **$6.8B**
+- SOM: 500K users × $120 = **$60M** (Year 3)
 
-**Competition**  
-TurboTax (expensive, complex), Stride (limited features), QuickBooks (overkill)  
-→ TaxIQ Pro: Purpose-built, AI-first, affordable
+**Why Now?**
+1. Gig economy grew 33% post-COVID
+2. AI enables intelligent categorization at scale
+3. IRS Free File API enables low-cost e-filing
+4. TurboTax hasn't innovated for gig workers
 
 **5-Year Projection**
 
-| Year | Users | Revenue | EBITDA |
-|------|-------|---------|--------|
-| 1 | 75K | $612K | -$480K |
-| 3 | 600K | $6.8M | $2.2M |
-| 5 | 2M | $30M | $16M |
+| Metric | Year 1 | Year 3 | Year 5 |
+|--------|--------|--------|--------|
+| Users | 75K | 500K | 1.5M |
+| Revenue | $612K | $6.6M | $26M |
+| E-Filers | — | 15K | 100K |
+| EBITDA | -$480K | $1.5M | $11M |
 
-**Ask**  
-$500K Pre-Seed → App Store launch, 75K users, prove LTV:CAC
+**Competitive Advantage**
+- 🎯 **Specialization**: Built for 1099, not everyone
+- 📱 **Mobile-first**: Gig workers live on phones
+- 🤖 **AI-native**: Not bolted on like competitors
+- 💰 **50% cheaper**: $99 vs TurboTax $200
+
+**The Ask**  
+**$500K Pre-Seed** → App Store launch, 75K users, validate Phase 1
+
+**Use of Funds**
+- 50% Engineering (e-filing foundation)
+- 30% Marketing (user acquisition)
+- 20% Operations
 
 **Team**  
-Founder + Emergent AI development partner
+Founder + Emergent AI development partner  
+Hiring: Full-stack engineer (Month 3), Growth lead (Month 4)
+
+---
+
+**Why We Win**
+
+TurboTax sees users **once a year**. We see them **every day**.
+
+By the time they're ready to file, we know:
+- Every mile they drove
+- Every receipt they captured  
+- Every deduction they're missing
+
+We're not just a tax prep tool. We're the **operating system for gig worker finances**.
 
 ---
 
