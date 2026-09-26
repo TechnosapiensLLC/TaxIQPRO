@@ -197,10 +197,18 @@ class ReminderResponse(BaseModel):
 
 # Helper functions
 def serialize_doc(doc):
-    """Convert MongoDB document to JSON-serializable dict"""
+    """Convert MongoDB document to JSON-serializable dict.
+
+    Also stringifies any nested BSON ObjectId values so that references such
+    as ``route_run_id``/``shopping_run_id`` can travel through FastAPI's JSON
+    encoder without crashing the endpoint.
+    """
     if doc is None:
         return None
     doc["id"] = str(doc.pop("_id"))
+    for key, value in list(doc.items()):
+        if isinstance(value, ObjectId):
+            doc[key] = str(value)
     return doc
 
 # IRS 2025 Standard Mileage Rate (estimated)

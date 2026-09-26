@@ -55,6 +55,9 @@ from routes import trips as trip_routes
 from routes import reminders as reminder_routes
 from routes import gas as gas_routes
 from routes import taxtools as taxtool_routes
+from routes import route_planner as route_planner_routes
+from routes import shopping as shopping_routes
+from routes import spend as spend_routes
 
 app.include_router(record_routes.router)
 app.include_router(geo_routes.router)
@@ -63,6 +66,9 @@ app.include_router(trip_routes.router)
 app.include_router(reminder_routes.router)
 app.include_router(gas_routes.router)
 app.include_router(taxtool_routes.router)
+app.include_router(route_planner_routes.router)
+app.include_router(shopping_routes.router)
+app.include_router(spend_routes.router)
 
 
 @app.on_event("startup")

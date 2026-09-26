@@ -164,6 +164,27 @@ export default function SettingsScreen() {
       title: 'Store Chain',
       items: [
         {
+          icon: 'cart',
+          label: 'Shopping Run',
+          sublabel: 'Scan warehouse items into one expense',
+          color: c.accent,
+          onPress: () => router.push('/shopping-run'),
+        },
+        {
+          icon: 'map',
+          label: 'Route Planner',
+          sublabel: 'Weekly routes that log mileage for you',
+          color: c.accentAlt,
+          onPress: () => router.push('/route-planner'),
+        },
+        {
+          icon: 'trending-up',
+          label: 'Chain Spend',
+          sublabel: 'Spend per store with cost-jump alerts',
+          color: c.danger,
+          onPress: () => router.push('/owner-dashboard'),
+        },
+        {
           icon: 'storefront',
           label: 'Stores & Team',
           sublabel: 'Manage stores, managers and drivers',

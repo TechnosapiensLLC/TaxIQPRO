@@ -662,6 +662,139 @@ export const api = {
     const response = await apiClient.get('/qbo/sync-log');
     return response.data;
   },
+
+  // ========================================
+  // ROUTE PLANNING
+  // ========================================
+  getRoutePlans: async () => {
+    const response = await apiClient.get('/routes');
+    return response.data;
+  },
+
+  createRoutePlan: async (body: {
+    name: string;
+    stops: { name: string; address?: string; lat?: number; lng?: number }[];
+    round_trip?: boolean;
+    store_id?: string;
+  }) => {
+    const response = await apiClient.post('/routes', body);
+    return response.data;
+  },
+
+  deleteRoutePlan: async (planId: string) => {
+    const response = await apiClient.delete(`/routes/${planId}`);
+    return response.data;
+  },
+
+  scheduleRoute: async (planId: string, dates: string[]) => {
+    const response = await apiClient.post(`/routes/${planId}/schedule`, { dates });
+    return response.data;
+  },
+
+  getRouteWeek: async (weekStart?: string) => {
+    const response = await apiClient.get('/routes/runs', {
+      params: weekStart ? { week_start: weekStart } : {},
+    });
+    return response.data;
+  },
+
+  startRouteRun: async (runId: string) => {
+    const response = await apiClient.post(`/routes/runs/${runId}/start`);
+    return response.data;
+  },
+
+  arriveAtStop: async (runId: string, stopIndex: number, coords?: { lat: number; lng: number }) => {
+    const response = await apiClient.post(`/routes/runs/${runId}/arrive`, {
+      stop_index: stopIndex,
+      lat: coords?.lat,
+      lng: coords?.lng,
+    });
+    return response.data;
+  },
+
+  completeRouteRun: async (runId: string) => {
+    const response = await apiClient.post(`/routes/runs/${runId}/complete`);
+    return response.data;
+  },
+
+  deleteRouteRun: async (runId: string) => {
+    const response = await apiClient.delete(`/routes/runs/${runId}`);
+    return response.data;
+  },
+
+  // ========================================
+  // SHOPPING RUNS
+  // ========================================
+  getActiveShoppingRun: async () => {
+    const response = await apiClient.get('/shopping-runs/active');
+    return response.data;
+  },
+
+  getShoppingRuns: async (status?: string) => {
+    const response = await apiClient.get('/shopping-runs', {
+      params: status ? { status } : {},
+    });
+    return response.data;
+  },
+
+  startShoppingRun: async (body: { vendor: string; category?: string; store_id?: string }) => {
+    const response = await apiClient.post('/shopping-runs', body);
+    return response.data;
+  },
+
+  lookupBarcode: async (barcode: string) => {
+    const response = await apiClient.get(`/shopping-runs/lookup/${barcode}`);
+    return response.data;
+  },
+
+  addShoppingItem: async (
+    runId: string,
+    item: { barcode?: string; name: string; qty: number; unit_price: number }
+  ) => {
+    const response = await apiClient.post(`/shopping-runs/${runId}/items`, item);
+    return response.data;
+  },
+
+  updateShoppingItem: async (
+    runId: string,
+    index: number,
+    updates: { name?: string; qty?: number; unit_price?: number }
+  ) => {
+    const response = await apiClient.patch(`/shopping-runs/${runId}/items/${index}`, updates);
+    return response.data;
+  },
+
+  removeShoppingItem: async (runId: string, index: number) => {
+    const response = await apiClient.delete(`/shopping-runs/${runId}/items/${index}`);
+    return response.data;
+  },
+
+  checkoutShoppingRun: async (
+    runId: string,
+    body: {
+      receipt_total?: number;
+      receipt_image_base64?: string;
+      category?: string;
+      notes?: string;
+      is_business?: boolean;
+    }
+  ) => {
+    const response = await apiClient.post(`/shopping-runs/${runId}/checkout`, body);
+    return response.data;
+  },
+
+  deleteShoppingRun: async (runId: string) => {
+    const response = await apiClient.delete(`/shopping-runs/${runId}`);
+    return response.data;
+  },
+
+  // ========================================
+  // CHAIN SPEND ANALYTICS
+  // ========================================
+  getChainSpend: async (params: { period?: 'week' | 'month'; store_id?: string } = {}) => {
+    const response = await apiClient.get('/org/reports/spend', { params });
+    return response.data;
+  },
 };
 
 export default api;

@@ -56,6 +56,10 @@ function ThemedStack() {
         <Stack.Screen name="qbo-sync" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="store-chain" options={{ headerShown: false, presentation: 'modal' }} />
         <Stack.Screen name="barcode-scan" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+        <Stack.Screen name="route-planner" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="route-run" options={{ headerShown: false }} />
+        <Stack.Screen name="owner-dashboard" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="shopping-run" options={{ headerShown: false, presentation: 'modal' }} />
       </Stack>
     </>
   );

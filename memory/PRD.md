@@ -83,6 +83,35 @@ PDFs are generated with `reportlab`. All accept `?year=`, `?scope=business|perso
 - Light / Dark / Auto switcher in Settings → Appearance, persisted to AsyncStorage.
 - All 30 screens migrated from hardcoded hex to `makeStyles(c)` + `useColors()`.
 
+### Route scheduling (built this session)
+- `routes/route_planner.py` — reusable route plans (2+ stops, haversine planned miles),
+  weekly scheduling (idempotent per plan+date+driver), and a drive flow:
+  `start` → `arrive` (GPS coords, falls back to planned coords) → `complete`.
+- Completing a run writes exactly ONE `mileage` document (`purpose: Business`,
+  `is_business: true`, `deduction_amount = miles * 0.70`) and returns 409 on a
+  second attempt, so a route can never be double-logged.
+- UI: `app/route-planner.tsx` (weekly grid + saved routes + schedule sheet) and
+  `app/route-run.tsx` (stop-by-stop arrival confirmation with progress bar).
+
+### Shopping Run Mode (built this session)
+- `routes/shopping.py` — one open run per user, scan items into a cart, then
+  check out into a single expense holding every line item.
+- Re-scanning the same barcode bumps quantity instead of adding a row.
+- `GET /api/shopping-runs/lookup/{barcode}` remembers the item name and last
+  price from the user's own scan history (no external product database).
+- Checkout accepts an explicit `receipt_total` or a receipt photo the AI reads,
+  reports the `variance` vs the scanned total, and 409s on a second checkout.
+- UI: `app/shopping-run.tsx`, feeding off `app/barcode-scan.tsx`.
+
+### Owner Dashboard — chain spend (built this session)
+- `GET /api/org/reports/spend?period=week|month` — business spend per store for
+  the current period vs the previous one, with per-category breakdown, miles,
+  and chain-wide category totals.
+- A store is flagged only when it rises by **both** ≥25% and ≥$50, so small
+  bases never raise false alarms. Personal records are excluded entirely.
+- 404 when the caller has no chain, 403 for driver-employees.
+- UI: `app/owner-dashboard.tsx`.
+
 ### Pre-existing features (still working)
 Dashboard with tax estimates & audit-risk score, AI receipt scanning, AI Tax Coach,
 Tax Filing Analyzer, Deduction Maximizer, Quarterly Tax Estimator, Gas Finder (EIA),
@@ -100,6 +129,7 @@ swipe-to-classify, tax reminders, subscription tiers.
     ├── auth.py  org.py  exports.py  export_utils.py  qbo.py
     ├── records.py  geo.py  imports.py  trips.py  reminders.py
     ├── gas.py  taxtools.py
+    ├── route_planner.py  shopping.py  spend.py
 ```
 `server.py` went from 2,245 monolithic lines to 78.
 
@@ -120,6 +150,11 @@ swipe-to-classify, tax reminders, subscription tiers.
 - `income`: user_id, organization_id, store_id, source, amount, date, is_1099, is_business
 - `coa_mappings`: user_id, mapping
 - `qbo_tokens` / `qbo_states` / `qbo_sync_log`
+- `route_plans`: user_id, organization_id, store_id, name, stops, round_trip, planned_miles
+- `route_runs`: plan_id, assignee_id, date, status, stops (with arrived_at + actual coords),
+  planned_miles, actual_miles, deduction_amount, mileage_id
+- `shopping_runs`: user_id, organization_id, store_id, vendor, category, status,
+  items (barcode, name, qty, unit_price), receipt_total, receipt_id
 - `reminders`, `trip_settings`, `filing_analyses`
 
 ---
@@ -131,18 +166,19 @@ swipe-to-classify, tax reminders, subscription tiers.
 | Emergent LLM Key — Claude `claude-sonnet-4-6` (receipt + tax coach) | Working |
 | Emergent LLM Key — Gemini `gemini-2.5-flash` (tax document parsing) | Working |
 | EIA gas price API (no key) | Working |
-| QuickBooks Online OAuth 2.0 | Code complete, **awaiting Intuit client ID/secret** |
+| QuickBooks Online OAuth 2.0 | **Configured** with Intuit sandbox credentials; authorize URL live |
 | QuickBooks Desktop (IIF / CSV), Xero, Sage | File exports working |
 
 ---
 
 ## 5. Known gaps / backlog
 
-1. **QuickBooks Online credentials** — user has an Intuit app; keys not yet supplied.
+1. **QuickBooks Online connect** — sandbox keys are in place; the user still needs
+   to complete the Intuit consent screen once to link a company, and the redirect
+   URI must stay registered in the Intuit Developer dashboard.
 2. **Background trip detection** — needs a native build; not testable in Expo Go.
-3. **Store-level fuel & route capture for owners/managers** — receipts and mileage
-   already support `store_id`; dedicated route-scheduling / pricing-route screens
-   are not built.
+3. **Pricing routes** — route scheduling now exists; a dedicated pricing-route
+   workflow (competitor price checks per stop) is not built.
 4. **Audit Risk Analysis** deep-dive screen is still a placeholder.
 5. **Plaid** direct bank/card import (Phase 2).
 6. No `testID` attributes on interactive elements — makes automated UI testing brittle.
