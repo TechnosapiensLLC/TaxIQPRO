@@ -15,6 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -31,6 +33,8 @@ const QUICK_QUESTIONS = [
 ];
 
 export default function TaxCoachScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -107,7 +111,7 @@ export default function TaxCoachScreen() {
       >
         {!isUser && (
           <View style={styles.avatarContainer}>
-            <Ionicons name="sparkles" size={18} color="#FFB84D" />
+            <Ionicons name="sparkles" size={18} color={c.warning} />
           </View>
         )}
         <View
@@ -134,7 +138,7 @@ export default function TaxCoachScreen() {
                   <Ionicons
                     name="checkmark-circle"
                     size={14}
-                    color="#00D9A5"
+                    color={c.accent}
                   />
                   <Text style={styles.deductionText}>{deduction}</Text>
                 </View>
@@ -169,7 +173,7 @@ export default function TaxCoachScreen() {
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <View style={styles.headerIcon}>
-            <Ionicons name="sparkles" size={20} color="#FFB84D" />
+            <Ionicons name="sparkles" size={20} color={c.warning} />
           </View>
           <Text style={styles.headerTitle}>AI Tax Coach</Text>
         </View>
@@ -192,10 +196,10 @@ export default function TaxCoachScreen() {
           {loading && (
             <View style={styles.loadingContainer}>
               <View style={styles.avatarContainer}>
-                <Ionicons name="sparkles" size={18} color="#FFB84D" />
+                <Ionicons name="sparkles" size={18} color={c.warning} />
               </View>
               <View style={styles.loadingBubble}>
-                <ActivityIndicator size="small" color="#FFB84D" />
+                <ActivityIndicator size="small" color={c.warning} />
                 <Text style={styles.loadingText}>Thinking...</Text>
               </View>
             </View>
@@ -209,7 +213,7 @@ export default function TaxCoachScreen() {
               value={input}
               onChangeText={setInput}
               placeholder="Ask about taxes, deductions..."
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
               multiline
               maxLength={500}
               editable={!loading}
@@ -225,7 +229,7 @@ export default function TaxCoachScreen() {
               <Ionicons
                 name="send"
                 size={20}
-                color={input.trim() && !loading ? '#FFF' : '#4A4A5A'}
+                color={input.trim() && !loading ? '#FFF' : c.borderStrong}
               />
             </TouchableOpacity>
           </View>
@@ -238,10 +242,10 @@ export default function TaxCoachScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   headerCenter: {
     flexDirection: 'row',
@@ -260,13 +264,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#FFB84D20',
+    backgroundColor: c.warning + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -290,7 +294,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FFB84D20',
+    backgroundColor: c.warning + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -301,29 +305,29 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   userBubble: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     borderBottomRightRadius: 4,
   },
   assistantBubble: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderBottomLeftRadius: 4,
   },
   messageText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     lineHeight: 22,
   },
   userMessageText: {
-    color: '#FFFFFF',
+    color: c.text,
   },
   deductionsContainer: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#2A2A35',
+    borderTopColor: c.border,
   },
   deductionsTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 8,
@@ -335,7 +339,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   deductionText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     flex: 1,
   },
@@ -346,15 +350,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   suggestionChip: {
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   suggestionText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 13,
   },
   loadingContainer: {
@@ -364,36 +368,36 @@ const styles = StyleSheet.create({
   loadingBubble: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     borderBottomLeftRadius: 4,
     padding: 14,
     gap: 10,
   },
   loadingText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   inputContainer: {
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#1A1A22',
+    borderTopColor: c.surfaceAlt,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 24,
     paddingLeft: 18,
     paddingRight: 6,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   input: {
     flex: 1,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     maxHeight: 100,
     paddingVertical: 8,
@@ -402,15 +406,15 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
   },
   disclaimer: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     fontSize: 11,
     textAlign: 'center',
     marginTop: 10,

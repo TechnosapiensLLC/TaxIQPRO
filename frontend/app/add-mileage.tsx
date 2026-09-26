@@ -18,10 +18,12 @@ import * as Location from 'expo-location';
 import { api } from '../src/services/api';
 import { format } from 'date-fns';
 
+import { useColors, C } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const PURPOSES = [
-  { id: 'Business', color: '#00D9A5', description: 'Work-related trips (deductible)' },
-  { id: 'Personal', color: '#6B6B7B', description: 'Personal errands' },
-  { id: 'Commute', color: '#FFB84D', description: 'To/from regular workplace' },
+  { id: 'Business', color: C.accent, description: 'Work-related trips (deductible)' },
+  { id: 'Personal', color: C.textMuted, description: 'Personal errands' },
+  { id: 'Commute', color: C.warning, description: 'To/from regular workplace' },
 ];
 
 const IRS_MILEAGE_RATE = 0.70;
@@ -32,6 +34,8 @@ interface LocationCoords {
 }
 
 export default function AddMileageScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [startLocation, setStartLocation] = useState('');
   const [endLocation, setEndLocation] = useState('');
@@ -225,7 +229,7 @@ export default function AddMileageScreen() {
                 value={startLocation}
                 onChangeText={setStartLocation}
                 placeholder="Enter start address"
-                placeholderTextColor="#4A4A5A"
+                placeholderTextColor={c.borderStrong}
               />
               <TouchableOpacity
                 style={styles.locationButton}
@@ -233,9 +237,9 @@ export default function AddMileageScreen() {
                 disabled={gettingLocation}
               >
                 {gettingLocation ? (
-                  <ActivityIndicator size="small" color="#00D9A5" />
+                  <ActivityIndicator size="small" color={c.accent} />
                 ) : (
-                  <Ionicons name="locate" size={20} color="#00D9A5" />
+                  <Ionicons name="locate" size={20} color={c.accent} />
                 )}
               </TouchableOpacity>
             </View>
@@ -249,7 +253,7 @@ export default function AddMileageScreen() {
                 value={endLocation}
                 onChangeText={setEndLocation}
                 placeholder="Enter destination"
-                placeholderTextColor="#4A4A5A"
+                placeholderTextColor={c.borderStrong}
               />
               <TouchableOpacity
                 style={styles.locationButton}
@@ -257,9 +261,9 @@ export default function AddMileageScreen() {
                 disabled={gettingLocation}
               >
                 {gettingLocation ? (
-                  <ActivityIndicator size="small" color="#00D9A5" />
+                  <ActivityIndicator size="small" color={c.accent} />
                 ) : (
-                  <Ionicons name="locate" size={20} color="#00D9A5" />
+                  <Ionicons name="locate" size={20} color={c.accent} />
                 )}
               </TouchableOpacity>
             </View>
@@ -276,10 +280,10 @@ export default function AddMileageScreen() {
                   disabled={calculatingDistance}
                 >
                   {calculatingDistance ? (
-                    <ActivityIndicator size="small" color="#7C6BFF" />
+                    <ActivityIndicator size="small" color={c.accentAlt} />
                   ) : (
                     <>
-                      <Ionicons name="refresh" size={14} color="#7C6BFF" />
+                      <Ionicons name="refresh" size={14} color={c.accentAlt} />
                       <Text style={styles.recalculateText}>Recalculate</Text>
                     </>
                   )}
@@ -292,19 +296,19 @@ export default function AddMileageScreen() {
                 value={distance}
                 onChangeText={setDistance}
                 placeholder="0.0"
-                placeholderTextColor="#4A4A5A"
+                placeholderTextColor={c.borderStrong}
                 keyboardType="decimal-pad"
               />
               {calculatingDistance && (
                 <View style={styles.calculatingOverlay}>
-                  <ActivityIndicator size="small" color="#00D9A5" />
+                  <ActivityIndicator size="small" color={c.accent} />
                   <Text style={styles.calculatingText}>Calculating...</Text>
                 </View>
               )}
             </View>
             {startCoords && endCoords && distance && (
               <Text style={styles.distanceHint}>
-                <Ionicons name="checkmark-circle" size={12} color="#00D9A5" /> Auto-calculated from GPS coordinates
+                <Ionicons name="checkmark-circle" size={12} color={c.accent} /> Auto-calculated from GPS coordinates
               </Text>
             )}
           </View>
@@ -317,14 +321,14 @@ export default function AddMileageScreen() {
               value={date}
               onChangeText={setDate}
               placeholder="YYYY-MM-DD"
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
             />
           </View>
 
           {/* Deduction Preview */}
           {purpose === 'Business' && parseFloat(distance) > 0 && (
             <View style={styles.deductionPreview}>
-              <Ionicons name="cash" size={20} color="#00D9A5" />
+              <Ionicons name="cash" size={20} color={c.accent} />
               <View style={styles.deductionText}>
                 <Text style={styles.deductionLabel}>Estimated Deduction</Text>
                 <Text style={styles.deductionValue}>
@@ -345,7 +349,7 @@ export default function AddMileageScreen() {
               value={notes}
               onChangeText={setNotes}
               placeholder="e.g., Client meeting at downtown office"
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -357,10 +361,10 @@ export default function AddMileageScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -369,15 +373,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
   saveText: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -391,19 +395,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   purposeContainer: {
     gap: 10,
@@ -411,11 +415,11 @@ const styles = StyleSheet.create({
   purposeOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   purposeDot: {
     width: 10,
@@ -427,12 +431,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   purposeTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '500',
   },
   purposeDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
@@ -444,13 +448,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationButton: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     width: 52,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   distanceHeader: {
     flexDirection: 'row',
@@ -464,11 +468,11 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    backgroundColor: '#7C6BFF15',
+    backgroundColor: c.accentAlt + '15',
     borderRadius: 8,
   },
   recalculateText: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 12,
     fontWeight: '500',
   },
@@ -488,39 +492,39 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   calculatingText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 12,
   },
   distanceHint: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 11,
     marginTop: 6,
   },
   deductionPreview: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A515',
+    backgroundColor: c.accent + '15',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#00D9A530',
+    borderColor: c.accent + '30',
   },
   deductionText: {
     flex: 1,
     marginLeft: 12,
   },
   deductionLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   deductionValue: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 20,
     fontWeight: '700',
   },
   deductionRate: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   notesInput: {

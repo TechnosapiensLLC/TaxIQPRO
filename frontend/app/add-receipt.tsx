@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../src/services/api';
 import { format } from 'date-fns';
+import { useScanStore } from '../src/store/scanStore';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const CATEGORIES = [
+  'Inventory & Stock',
+  'Fuel',
   'Vehicle & Gas',
   'Equipment & Supplies',
   'Phone & Internet',
@@ -31,10 +36,14 @@ const CATEGORIES = [
   'Entertainment',
   'Parking & Tolls',
   'Maintenance & Repairs',
+  'Travel',
+  'Bank Fees',
   'Other',
 ];
 
 export default function AddReceiptScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [vendor, setVendor] = useState('');
   const [amount, setAmount] = useState('');
@@ -43,6 +52,21 @@ export default function AddReceiptScreen() {
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const [isBusiness, setIsBusiness] = useState(true);
+  const [stores, setStores] = useState<any[]>([]);
+  const [storeId, setStoreId] = useState<string | null>(null);
+  const lastScan = useScanStore((state) => state.lastScan);
+  const clearScan = useScanStore((state) => state.clear);
+  const barcode = lastScan?.barcode ?? null;
+
+  useEffect(() => () => clearScan(), [clearScan]);
+
+  useEffect(() => {
+    api
+      .getStores()
+      .then((data) => setStores(data || []))
+      .catch(() => setStores([]));
+  }, []);
 
   const handleSave = async () => {
     if (!vendor.trim()) {
@@ -66,6 +90,9 @@ export default function AddReceiptScreen() {
         date,
         category,
         notes: notes.trim(),
+        is_business: isBusiness,
+        store_id: isBusiness ? storeId ?? undefined : undefined,
+        barcode: barcode ?? undefined,
       });
       router.back();
     } catch (error) {
@@ -106,7 +133,7 @@ export default function AddReceiptScreen() {
               value={vendor}
               onChangeText={setVendor}
               placeholder="e.g., Shell Gas Station"
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
             />
           </View>
 
@@ -119,7 +146,7 @@ export default function AddReceiptScreen() {
                 value={amount}
                 onChangeText={setAmount}
                 placeholder="0.00"
-                placeholderTextColor="#4A4A5A"
+                placeholderTextColor={c.borderStrong}
                 keyboardType="decimal-pad"
               />
             </View>
@@ -132,7 +159,7 @@ export default function AddReceiptScreen() {
               value={date}
               onChangeText={setDate}
               placeholder="YYYY-MM-DD"
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
             />
           </View>
 
@@ -145,7 +172,7 @@ export default function AddReceiptScreen() {
               <Text
                 style={[
                   styles.categorySelectorText,
-                  !category && { color: '#4A4A5A' },
+                  !category && { color: c.borderStrong },
                 ]}
               >
                 {category || 'Select a category'}
@@ -153,7 +180,7 @@ export default function AddReceiptScreen() {
               <Ionicons
                 name={showCategories ? 'chevron-up' : 'chevron-down'}
                 size={20}
-                color="#6B6B7B"
+                color={c.textMuted}
               />
             </TouchableOpacity>
 
@@ -183,7 +210,7 @@ export default function AddReceiptScreen() {
                       <Ionicons
                         name="checkmark"
                         size={18}
-                        color="#00D9A5"
+                        color={c.accent}
                       />
                     )}
                   </TouchableOpacity>
@@ -193,13 +220,80 @@ export default function AddReceiptScreen() {
           </View>
 
           <View style={styles.inputGroup}>
+            <Text style={styles.label}>Is this business or personal?</Text>
+            <View style={styles.segmented}>
+              <TouchableOpacity
+                style={[styles.segment, isBusiness && styles.segmentActive]}
+                onPress={() => setIsBusiness(true)}
+              >
+                <Ionicons
+                  name="briefcase-outline"
+                  size={18}
+                  color={isBusiness ? c.onPrimary : c.textMuted}
+                />
+                <Text style={[styles.segmentText, isBusiness && styles.segmentTextActive]}>
+                  Business
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.segment, !isBusiness && styles.segmentActive]}
+                onPress={() => setIsBusiness(false)}
+              >
+                <Ionicons
+                  name="person-outline"
+                  size={18}
+                  color={!isBusiness ? c.onPrimary : c.textMuted}
+                />
+                <Text style={[styles.segmentText, !isBusiness && styles.segmentTextActive]}>
+                  Personal
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.helperText}>
+              {isBusiness
+                ? 'Counted toward your deductions and chain reports.'
+                : 'Kept private — never shared with your store chain.'}
+            </Text>
+          </View>
+
+          {isBusiness && stores.length > 0 && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Store (optional)</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+                {stores.map((store) => (
+                  <TouchableOpacity
+                    key={store.id}
+                    style={[styles.chip, storeId === store.id && styles.chipActive]}
+                    onPress={() => setStoreId(storeId === store.id ? null : store.id)}
+                  >
+                    <Text style={[styles.chipText, storeId === store.id && styles.chipTextActive]}>
+                      {store.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.barcodeRow}
+            onPress={() => router.push('/barcode-scan')}
+          >
+            <Ionicons name="barcode-outline" size={20} color={c.accent} />
+            <Text style={styles.barcodeText}>
+              {barcode ? `Item barcode: ${barcode}` : 'Scan item barcode (warehouse purchases)'}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={c.textMuted} />
+          </TouchableOpacity>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Notes (optional)</Text>
             <TextInput
               style={[styles.input, styles.notesInput]}
               value={notes}
               onChangeText={setNotes}
               placeholder="Add any notes about this expense"
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -213,7 +307,7 @@ export default function AddReceiptScreen() {
               router.push('/scan');
             }}
           >
-            <Ionicons name="camera" size={20} color="#00D9A5" />
+            <Ionicons name="camera" size={20} color={c.accent} />
             <Text style={styles.scanButtonText}>Scan receipt instead</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -222,10 +316,90 @@ export default function AddReceiptScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
+  segmented: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  segment: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: c.surfaceAlt,
+    borderWidth: 1,
+    borderColor: c.border,
+    minHeight: 48,
+  },
+  segmentActive: {
+    backgroundColor: c.accent,
+    borderColor: c.accent,
+  },
+  segmentText: {
+    color: c.textMuted,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  segmentTextActive: {
+    color: c.onPrimary,
+  },
+  helperText: {
+    color: c.textMuted,
+    fontSize: 12,
+    marginTop: 8,
+    lineHeight: 17,
+  },
+  chipRow: {
+    gap: 8,
+    paddingRight: 8,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: c.surfaceAlt,
+    borderWidth: 1,
+    borderColor: c.border,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  chipActive: {
+    backgroundColor: c.accent,
+    borderColor: c.accent,
+  },
+  chipText: {
+    color: c.textMuted,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  chipTextActive: {
+    color: c.onPrimary,
+  },
+  barcodeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: c.surface,
+    borderWidth: 1,
+    borderColor: c.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginBottom: 20,
+    minHeight: 48,
+  },
+  barcodeText: {
+    flex: 1,
+    color: c.text,
+    fontSize: 13,
+    fontWeight: '600',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -234,15 +408,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
   saveText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -256,30 +430,30 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   currencySymbol: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 20,
     fontWeight: '600',
     paddingLeft: 16,
@@ -294,22 +468,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   categorySelectorText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
   },
   categoriesList: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
     maxHeight: 250,
   },
   categoryOption: {
@@ -318,17 +492,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   categoryOptionSelected: {
-    backgroundColor: '#00D9A510',
+    backgroundColor: c.accent + '10',
   },
   categoryOptionText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
   },
   categoryOptionTextSelected: {
-    color: '#00D9A5',
+    color: c.accent,
     fontWeight: '500',
   },
   notesInput: {
@@ -344,7 +518,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   scanButtonText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 14,
     fontWeight: '500',
   },

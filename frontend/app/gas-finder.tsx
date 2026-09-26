@@ -19,6 +19,8 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { api } from '../src/services/api';
 
+import { useColors, C } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface GasStation {
@@ -60,10 +62,10 @@ type FuelGrade = 'regular' | 'midgrade' | 'premium' | 'diesel';
 type ViewMode = 'list' | 'map';
 
 const FUEL_GRADES: { key: FuelGrade; label: string; color: string }[] = [
-  { key: 'regular', label: 'Regular', color: '#6B6B7B' },
-  { key: 'midgrade', label: 'Mid-Grade', color: '#FFB84D' },
-  { key: 'premium', label: 'Premium', color: '#7C6BFF' },
-  { key: 'diesel', label: 'Diesel', color: '#00D9A5' },
+  { key: 'regular', label: 'Regular', color: C.textMuted },
+  { key: 'midgrade', label: 'Mid-Grade', color: C.warning },
+  { key: 'premium', label: 'Premium', color: C.accentAlt },
+  { key: 'diesel', label: 'Diesel', color: C.accent },
 ];
 
 const BRAND_COLORS: { [key: string]: string } = {
@@ -82,6 +84,8 @@ const BRAND_COLORS: { [key: string]: string } = {
 };
 
 export default function GasFinderScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedGrade, setSelectedGrade] = useState<FuelGrade>('premium');
@@ -117,8 +121,8 @@ export default function GasFinderScreen() {
       setSummary(result.summary);
 
       // Center map on user location
-      if (mapRef.current && result.stations?.length > 0) {
-        mapRef.current.animateToRegion({
+      if (false) {
+        ({
           latitude: lat,
           longitude: lng,
           latitudeDelta: 0.1,
@@ -167,14 +171,14 @@ export default function GasFinderScreen() {
   };
 
   const getMarkerColor = (station: GasStation): string => {
-    if (!summary) return '#6B6B7B';
+    if (!summary) return c.textMuted;
     const price = station.prices[selectedGrade];
     const cheapest = summary.cheapest_premium;
     const avg = summary.average_premium;
     
-    if (price <= cheapest + 0.05) return '#00D9A5'; // Green - cheapest
-    if (price <= avg) return '#FFB84D'; // Yellow - below average
-    return '#FF6B6B'; // Red - above average
+    if (price <= cheapest + 0.05) return c.accent; // Green - cheapest
+    if (price <= avg) return c.warning; // Yellow - below average
+    return c.danger; // Red - above average
   };
 
   const renderStationCard = ({ item }: { item: GasStation }) => {
@@ -189,14 +193,14 @@ export default function GasFinderScreen() {
       >
         {isCheapest && (
           <View style={styles.cheapestBadge}>
-            <Ionicons name="trophy" size={12} color="#FFB84D" />
+            <Ionicons name="trophy" size={12} color={c.warning} />
             <Text style={styles.cheapestBadgeText}>CHEAPEST</Text>
           </View>
         )}
         
         <View style={styles.stationHeader}>
           <View style={styles.stationInfo}>
-            <View style={[styles.brandDot, { backgroundColor: BRAND_COLORS[item.logo] || '#6B6B7B' }]} />
+            <View style={[styles.brandDot, { backgroundColor: BRAND_COLORS[item.logo] || c.textMuted }]} />
             <View>
               <Text style={styles.stationName}>{item.name}</Text>
               <Text style={styles.stationAddress} numberOfLines={1}>{item.address}</Text>
@@ -210,16 +214,16 @@ export default function GasFinderScreen() {
 
         <View style={styles.stationDetails}>
           <View style={styles.detailItem}>
-            <Ionicons name="location-outline" size={14} color="#6B6B7B" />
+            <Ionicons name="location-outline" size={14} color={c.textMuted} />
             <Text style={styles.detailText}>{item.distance_miles} mi</Text>
           </View>
           <View style={styles.detailItem}>
-            <Ionicons name="time-outline" size={14} color="#6B6B7B" />
+            <Ionicons name="time-outline" size={14} color={c.textMuted} />
             <Text style={styles.detailText}>{item.hours}</Text>
           </View>
           {parseFloat(savings) > 0 && (
             <View style={styles.savingsBadge}>
-              <Ionicons name="arrow-down" size={12} color="#00D9A5" />
+              <Ionicons name="arrow-down" size={12} color={c.accent} />
               <Text style={styles.savingsText}>Save ${savings}/gal</Text>
             </View>
           )}
@@ -227,7 +231,7 @@ export default function GasFinderScreen() {
 
         {item.is_member_only && (
           <View style={styles.memberBadge}>
-            <Ionicons name="card" size={12} color="#FFB84D" />
+            <Ionicons name="card" size={12} color={c.warning} />
             <Text style={styles.memberText}>Members Only</Text>
           </View>
         )}
@@ -235,10 +239,10 @@ export default function GasFinderScreen() {
         <View style={styles.cardActions}>
           <TouchableOpacity style={styles.allPricesButton} onPress={() => handleStationPress(item)}>
             <Text style={styles.allPricesText}>All Grades</Text>
-            <Ionicons name="chevron-forward" size={14} color="#7C6BFF" />
+            <Ionicons name="chevron-forward" size={14} color={c.accentAlt} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.directionsSmallButton} onPress={() => openDirections(item)}>
-            <Ionicons name="navigate" size={14} color="#00D9A5" />
+            <Ionicons name="navigate" size={14} color={c.accent} />
             <Text style={styles.directionsSmallText}>Directions</Text>
           </TouchableOpacity>
         </View>
@@ -251,7 +255,7 @@ export default function GasFinderScreen() {
     // For web preview, show a placeholder
     return (
       <View style={styles.mapUnavailable}>
-        <Ionicons name="map-outline" size={48} color="#2A2A35" />
+        <Ionicons name="map-outline" size={48} color={c.border} />
         <Text style={styles.mapUnavailableText}>Map view available on mobile devices</Text>
         <Text style={styles.mapUnavailableSubtext}>Open in Expo Go to see the interactive map</Text>
         <View style={styles.mapStationList}>
@@ -263,7 +267,7 @@ export default function GasFinderScreen() {
                 style={styles.mapListItem}
                 onPress={() => handleStationPress(station)}
               >
-                <View style={[styles.mapListDot, { backgroundColor: isCheapest ? '#00D9A5' : '#6B6B7B' }]} />
+                <View style={[styles.mapListDot, { backgroundColor: isCheapest ? c.accent : c.textMuted }]} />
                 <Text style={styles.mapListName} numberOfLines={1}>{station.name}</Text>
                 <Text style={styles.mapListPrice}>{formatPrice(station.prices[selectedGrade])}</Text>
                 <Text style={styles.mapListDistance}>{station.distance_miles} mi</Text>
@@ -294,7 +298,7 @@ export default function GasFinderScreen() {
             <View style={styles.modalHandle} />
             
             <View style={styles.modalHeader}>
-              <View style={[styles.brandDotLarge, { backgroundColor: BRAND_COLORS[selectedStation.logo] || '#6B6B7B' }]} />
+              <View style={[styles.brandDotLarge, { backgroundColor: BRAND_COLORS[selectedStation.logo] || c.textMuted }]} />
               <View style={styles.modalHeaderText}>
                 <Text style={styles.modalTitle}>{selectedStation.name}</Text>
                 <Text style={styles.modalSubtitle}>{selectedStation.address}</Text>
@@ -342,7 +346,7 @@ export default function GasFinderScreen() {
             </View>
 
             <View style={styles.updateInfo}>
-              <Ionicons name="refresh" size={14} color="#6B6B7B" />
+              <Ionicons name="refresh" size={14} color={c.textMuted} />
               <Text style={styles.updateText}>
                 Updated {getTimeSinceUpdate(selectedStation.last_updated)}
               </Text>
@@ -384,7 +388,7 @@ export default function GasFinderScreen() {
       {summary && (
         <View style={styles.savingsSummary}>
           <View style={styles.savingsIcon}>
-            <Ionicons name="flash" size={20} color="#FFB84D" />
+            <Ionicons name="flash" size={20} color={c.warning} />
           </View>
           <View style={styles.savingsInfo}>
             <Text style={styles.savingsTitle}>
@@ -426,14 +430,14 @@ export default function GasFinderScreen() {
           style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
           onPress={() => setViewMode('list')}
         >
-          <Ionicons name="list" size={18} color={viewMode === 'list' ? '#FFF' : '#6B6B7B'} />
+          <Ionicons name="list" size={18} color={viewMode === 'list' ? '#FFF' : c.textMuted} />
           <Text style={[styles.toggleText, viewMode === 'list' && styles.toggleTextActive]}>List</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.toggleButton, viewMode === 'map' && styles.toggleButtonActive]}
           onPress={() => setViewMode('map')}
         >
-          <Ionicons name="map" size={18} color={viewMode === 'map' ? '#FFF' : '#6B6B7B'} />
+          <Ionicons name="map" size={18} color={viewMode === 'map' ? '#FFF' : c.textMuted} />
           <Text style={[styles.toggleText, viewMode === 'map' && styles.toggleTextActive]}>Map</Text>
         </TouchableOpacity>
         <Text style={styles.stationCount}>{stations.length} stations</Text>
@@ -442,7 +446,7 @@ export default function GasFinderScreen() {
       {/* Content */}
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
           <Text style={styles.loadingText}>Finding gas stations near you...</Text>
         </View>
       ) : viewMode === 'list' ? (
@@ -462,54 +466,54 @@ export default function GasFinderScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0F' },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.bg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
   headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '600' },
-  savingsSummary: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFB84D15', marginHorizontal: 20, borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#FFB84D30' },
-  savingsIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFB84D20', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  savingsSummary: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.warning + '15', marginHorizontal: 20, borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: c.warning + '30' },
+  savingsIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.warning + '20', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   savingsInfo: { flex: 1 },
-  savingsTitle: { color: '#FFB84D', fontSize: 15, fontWeight: '600' },
-  savingsSubtitle: { color: '#6B6B7B', fontSize: 12, marginTop: 2 },
+  savingsTitle: { color: c.warning, fontSize: 15, fontWeight: '600' },
+  savingsSubtitle: { color: c.textMuted, fontSize: 12, marginTop: 2 },
   gradeSelector: { paddingHorizontal: 20, marginBottom: 12, maxHeight: 44 },
-  gradeButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: '#14141A', marginRight: 10, borderWidth: 1, borderColor: 'transparent' },
-  gradeButtonActive: { backgroundColor: '#1A1A24' },
+  gradeButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: c.surface, marginRight: 10, borderWidth: 1, borderColor: 'transparent' },
+  gradeButtonActive: { backgroundColor: c.surfaceAlt },
   gradeDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
-  gradeButtonText: { color: '#6B6B7B', fontSize: 13, fontWeight: '500' },
+  gradeButtonText: { color: c.textMuted, fontSize: 13, fontWeight: '500' },
   gradeButtonTextActive: { color: '#FFF' },
   viewToggle: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12 },
-  toggleButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, backgroundColor: '#14141A', marginRight: 10, gap: 6 },
-  toggleButtonActive: { backgroundColor: '#7C6BFF' },
-  toggleText: { color: '#6B6B7B', fontSize: 13, fontWeight: '500' },
+  toggleButton: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, backgroundColor: c.surface, marginRight: 10, gap: 6 },
+  toggleButtonActive: { backgroundColor: c.accentAlt },
+  toggleText: { color: c.textMuted, fontSize: 13, fontWeight: '500' },
   toggleTextActive: { color: '#FFF' },
-  stationCount: { color: '#6B6B7B', fontSize: 13, marginLeft: 'auto' },
+  stationCount: { color: c.textMuted, fontSize: 13, marginLeft: 'auto' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { color: '#6B6B7B', marginTop: 12 },
+  loadingText: { color: c.textMuted, marginTop: 12 },
   listContent: { padding: 20, paddingTop: 0 },
-  stationCard: { backgroundColor: '#14141A', borderRadius: 16, padding: 16, marginBottom: 12 },
-  stationCardCheapest: { borderWidth: 1, borderColor: '#FFB84D50' },
-  cheapestBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, position: 'absolute', top: 12, right: 12, backgroundColor: '#FFB84D20', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, zIndex: 1 },
-  cheapestBadgeText: { color: '#FFB84D', fontSize: 10, fontWeight: '700' },
+  stationCard: { backgroundColor: c.surface, borderRadius: 16, padding: 16, marginBottom: 12 },
+  stationCardCheapest: { borderWidth: 1, borderColor: c.warning + '50' },
+  cheapestBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, position: 'absolute', top: 12, right: 12, backgroundColor: c.warning + '20', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, zIndex: 1 },
+  cheapestBadgeText: { color: c.warning, fontSize: 10, fontWeight: '700' },
   stationHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
   stationInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   brandDot: { width: 36, height: 36, borderRadius: 18, marginRight: 12 },
   stationName: { color: '#FFF', fontSize: 16, fontWeight: '600' },
-  stationAddress: { color: '#6B6B7B', fontSize: 13, marginTop: 2, maxWidth: 180 },
+  stationAddress: { color: c.textMuted, fontSize: 13, marginTop: 2, maxWidth: 180 },
   priceContainer: { alignItems: 'flex-end' },
   priceValue: { color: '#FFF', fontSize: 24, fontWeight: '700' },
-  priceLabel: { color: '#6B6B7B', fontSize: 11, textTransform: 'capitalize' },
+  priceLabel: { color: c.textMuted, fontSize: 11, textTransform: 'capitalize' },
   stationDetails: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 12 },
   detailItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  detailText: { color: '#6B6B7B', fontSize: 12 },
-  savingsBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#00D9A520', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  savingsText: { color: '#00D9A5', fontSize: 11, fontWeight: '600' },
-  memberBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFB84D15', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 12 },
-  memberText: { color: '#FFB84D', fontSize: 11 },
-  cardActions: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#2A2A35', marginTop: 4, paddingTop: 12 },
+  detailText: { color: c.textMuted, fontSize: 12 },
+  savingsBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accent + '20', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  savingsText: { color: c.accent, fontSize: 11, fontWeight: '600' },
+  memberBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.warning + '15', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 12 },
+  memberText: { color: c.warning, fontSize: 11 },
+  cardActions: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: c.border, marginTop: 4, paddingTop: 12 },
   allPricesButton: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 },
-  allPricesText: { color: '#7C6BFF', fontSize: 13, fontWeight: '500' },
-  directionsSmallButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#00D9A520', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  directionsSmallText: { color: '#00D9A5', fontSize: 13, fontWeight: '500' },
+  allPricesText: { color: c.accentAlt, fontSize: 13, fontWeight: '500' },
+  directionsSmallButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accent + '20', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  directionsSmallText: { color: c.accent, fontSize: 13, fontWeight: '500' },
   mapContainer: { flex: 1, margin: 20, marginTop: 0, borderRadius: 16, overflow: 'hidden' },
   map: { flex: 1 },
   mapMarker: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, flexDirection: 'row', alignItems: 'center' },
@@ -521,40 +525,40 @@ const styles = StyleSheet.create({
   legendDot: { width: 10, height: 10, borderRadius: 5 },
   legendText: { color: '#FFF', fontSize: 11 },
   mapUnavailable: { flex: 1, justifyContent: 'center', alignItems: 'center', margin: 20 },
-  mapUnavailableText: { color: '#6B6B7B', fontSize: 16, marginTop: 12 },
-  mapUnavailableSubtext: { color: '#4A4A5A', fontSize: 13, marginTop: 4 },
+  mapUnavailableText: { color: c.textMuted, fontSize: 16, marginTop: 12 },
+  mapUnavailableSubtext: { color: c.borderStrong, fontSize: 13, marginTop: 4 },
   mapStationList: { width: '100%', marginTop: 20, paddingHorizontal: 20 },
-  mapListItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#14141A', padding: 12, borderRadius: 10, marginBottom: 8 },
+  mapListItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.surface, padding: 12, borderRadius: 10, marginBottom: 8 },
   mapListDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
   mapListName: { flex: 1, color: '#FFF', fontSize: 14 },
   mapListPrice: { color: '#FFF', fontSize: 14, fontWeight: '700', marginRight: 10 },
-  mapListDistance: { color: '#6B6B7B', fontSize: 12 },
+  mapListDistance: { color: c.textMuted, fontSize: 12 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#14141A', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: SCREEN_HEIGHT * 0.75 },
-  modalHandle: { width: 40, height: 4, backgroundColor: '#2A2A35', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  modalContent: { backgroundColor: c.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: SCREEN_HEIGHT * 0.75 },
+  modalHandle: { width: 40, height: 4, backgroundColor: c.border, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   brandDotLarge: { width: 48, height: 48, borderRadius: 24, marginRight: 14 },
   modalHeaderText: { flex: 1 },
   modalTitle: { color: '#FFF', fontSize: 20, fontWeight: '700' },
-  modalSubtitle: { color: '#6B6B7B', fontSize: 14, marginTop: 2 },
-  modalDistance: { color: '#00D9A5', fontSize: 13, marginTop: 4 },
+  modalSubtitle: { color: c.textMuted, fontSize: 14, marginTop: 2 },
+  modalDistance: { color: c.accent, fontSize: 13, marginTop: 4 },
   allPricesTitle: { color: '#FFF', fontSize: 16, fontWeight: '600', marginBottom: 12 },
   priceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-  priceGridItem: { width: (SCREEN_WIDTH - 70) / 2, backgroundColor: '#0A0A0F', borderRadius: 12, padding: 14, alignItems: 'center' },
-  priceGridItemSelected: { borderWidth: 1, borderColor: '#7C6BFF' },
+  priceGridItem: { width: (SCREEN_WIDTH - 70) / 2, backgroundColor: c.bg, borderRadius: 12, padding: 14, alignItems: 'center' },
+  priceGridItemSelected: { borderWidth: 1, borderColor: c.accentAlt },
   gradeIndicator: { width: 8, height: 8, borderRadius: 4, marginBottom: 8 },
-  gradeName: { color: '#6B6B7B', fontSize: 12, marginBottom: 4 },
+  gradeName: { color: c.textMuted, fontSize: 12, marginBottom: 4 },
   gradePrice: { color: '#FFF', fontSize: 22, fontWeight: '700' },
-  belowAvgBadge: { backgroundColor: '#00D9A520', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginTop: 6 },
-  belowAvgText: { color: '#00D9A5', fontSize: 10 },
+  belowAvgBadge: { backgroundColor: c.accent + '20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginTop: 6 },
+  belowAvgText: { color: c.accent, fontSize: 10 },
   amenitiesSection: { marginBottom: 16 },
-  amenitiesTitle: { color: '#6B6B7B', fontSize: 13, marginBottom: 8 },
+  amenitiesTitle: { color: c.textMuted, fontSize: 13, marginBottom: 8 },
   amenitiesList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  amenityChip: { backgroundColor: '#0A0A0F', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  amenityChip: { backgroundColor: c.bg, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   amenityText: { color: '#FFF', fontSize: 12 },
   updateInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  updateText: { color: '#6B6B7B', fontSize: 12, marginLeft: 6 },
-  dataSourceText: { color: '#4A4A5A', fontSize: 11 },
-  directionsButton: { backgroundColor: '#00D9A5', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 14, gap: 8 },
+  updateText: { color: c.textMuted, fontSize: 12, marginLeft: 6 },
+  dataSourceText: { color: c.borderStrong, fontSize: 11 },
+  directionsButton: { backgroundColor: c.accent, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 14, gap: 8 },
   directionsButtonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
 });

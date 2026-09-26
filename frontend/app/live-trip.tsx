@@ -14,6 +14,8 @@ import * as Location from 'expo-location';
 import { api } from '../src/services/api';
 import { format } from 'date-fns';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const IRS_MILEAGE_RATE = 0.70;
 
 interface RoutePoint {
@@ -38,6 +40,8 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 };
 
 export default function LiveTripScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [isTracking, setIsTracking] = useState(false);
   const [totalMiles, setTotalMiles] = useState(0);
@@ -294,7 +298,7 @@ export default function LiveTripScreen() {
 
       {/* GPS Status */}
       <View style={styles.statusBar}>
-        <View style={[styles.statusDot, { backgroundColor: isTracking ? '#00D9A5' : '#6B6B7B' }]} />
+        <View style={[styles.statusDot, { backgroundColor: isTracking ? c.accent : c.textMuted }]} />
         <Text style={styles.statusText}>{gpsStatus}</Text>
         {pointsCollected > 0 && (
           <Text style={styles.pointsText}>{pointsCollected} GPS points</Text>
@@ -308,7 +312,7 @@ export default function LiveTripScreen() {
           onPress={() => !isTracking && setPurpose('Business')}
           disabled={isTracking}
         >
-          <Ionicons name="briefcase" size={18} color={purpose === 'Business' ? '#FFF' : '#6B6B7B'} />
+          <Ionicons name="briefcase" size={18} color={purpose === 'Business' ? '#FFF' : c.textMuted} />
           <Text style={[styles.purposeText, purpose === 'Business' && styles.purposeTextActive]}>Business</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -316,7 +320,7 @@ export default function LiveTripScreen() {
           onPress={() => !isTracking && setPurpose('Personal')}
           disabled={isTracking}
         >
-          <Ionicons name="car" size={18} color={purpose === 'Personal' ? '#FFF' : '#6B6B7B'} />
+          <Ionicons name="car" size={18} color={purpose === 'Personal' ? '#FFF' : c.textMuted} />
           <Text style={[styles.purposeText, purpose === 'Personal' && styles.purposeTextActive]}>Personal</Text>
         </TouchableOpacity>
       </View>
@@ -330,7 +334,7 @@ export default function LiveTripScreen() {
         </View>
         {isTracking && (
           <View style={styles.speedBadge}>
-            <Ionicons name="speedometer" size={14} color="#00D9A5" />
+            <Ionicons name="speedometer" size={14} color={c.accent} />
             <Text style={styles.speedText}>{currentSpeed.toFixed(0)} mph</Text>
           </View>
         )}
@@ -339,19 +343,19 @@ export default function LiveTripScreen() {
       {/* Stats */}
       <View style={styles.statsRow}>
         <View style={styles.stat}>
-          <Ionicons name="time-outline" size={18} color="#6B6B7B" />
+          <Ionicons name="time-outline" size={18} color={c.textMuted} />
           <Text style={styles.statValue}>{formatTime(elapsedTime)}</Text>
           <Text style={styles.statLabel}>Duration</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.stat}>
-          <Ionicons name="cash-outline" size={18} color="#00D9A5" />
-          <Text style={[styles.statValue, { color: '#00D9A5' }]}>${deduction.toFixed(2)}</Text>
+          <Ionicons name="cash-outline" size={18} color={c.accent} />
+          <Text style={[styles.statValue, { color: c.accent }]}>${deduction.toFixed(2)}</Text>
           <Text style={styles.statLabel}>Deduction</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.stat}>
-          <Ionicons name="trending-up-outline" size={18} color="#6B6B7B" />
+          <Ionicons name="trending-up-outline" size={18} color={c.textMuted} />
           <Text style={styles.statValue}>{elapsedTime > 0 ? ((totalMiles / elapsedTime) * 3600).toFixed(0) : '0'}</Text>
           <Text style={styles.statLabel}>Avg mph</Text>
         </View>
@@ -361,7 +365,7 @@ export default function LiveTripScreen() {
       {(startLocation || currentLocation) && (
         <View style={styles.locationsCard}>
           <View style={styles.locationRow}>
-            <Ionicons name="radio-button-on" size={12} color="#00D9A5" />
+            <Ionicons name="radio-button-on" size={12} color={c.accent} />
             <View style={styles.locationInfo}>
               <Text style={styles.locationLabel}>Start</Text>
               <Text style={styles.locationText} numberOfLines={1}>{startLocation || 'Waiting...'}</Text>
@@ -371,7 +375,7 @@ export default function LiveTripScreen() {
             <>
               <View style={styles.locationLine} />
               <View style={styles.locationRow}>
-                <Ionicons name="location" size={12} color="#FF6B6B" />
+                <Ionicons name="location" size={12} color={c.danger} />
                 <View style={styles.locationInfo}>
                   <Text style={styles.locationLabel}>Current</Text>
                   <Text style={styles.locationText} numberOfLines={1}>{currentLocation || 'Tracking...'}</Text>
@@ -408,42 +412,42 @@ export default function LiveTripScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A0A0F' },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.bg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16 },
   headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '600' },
   statusBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 8, gap: 8 },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: { color: '#6B6B7B', fontSize: 12 },
-  pointsText: { color: '#00D9A5', fontSize: 12, marginLeft: 8 },
-  purposeToggle: { flexDirection: 'row', marginHorizontal: 20, backgroundColor: '#14141A', borderRadius: 12, padding: 4, marginBottom: 20 },
+  statusText: { color: c.textMuted, fontSize: 12 },
+  pointsText: { color: c.accent, fontSize: 12, marginLeft: 8 },
+  purposeToggle: { flexDirection: 'row', marginHorizontal: 20, backgroundColor: c.surface, borderRadius: 12, padding: 4, marginBottom: 20 },
   purposeButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 10, gap: 8 },
-  purposeActive: { backgroundColor: '#00D9A5' },
-  purposeActivePersonal: { backgroundColor: '#6B6B7B' },
-  purposeText: { color: '#6B6B7B', fontSize: 14, fontWeight: '600' },
+  purposeActive: { backgroundColor: c.accent },
+  purposeActivePersonal: { backgroundColor: c.textMuted },
+  purposeText: { color: c.textMuted, fontSize: 14, fontWeight: '600' },
   purposeTextActive: { color: '#FFF' },
   odometerContainer: { alignItems: 'center', paddingVertical: 24 },
-  odometerLabel: { color: '#6B6B7B', fontSize: 12, fontWeight: '600', letterSpacing: 2, marginBottom: 8 },
+  odometerLabel: { color: c.textMuted, fontSize: 12, fontWeight: '600', letterSpacing: 2, marginBottom: 8 },
   odometerRow: { flexDirection: 'row', alignItems: 'baseline' },
   odometerValue: { color: '#FFF', fontSize: 64, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  odometerUnit: { color: '#6B6B7B', fontSize: 24, marginLeft: 8 },
-  speedBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, backgroundColor: '#00D9A520', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
-  speedText: { color: '#00D9A5', fontSize: 16, fontWeight: '600' },
-  statsRow: { flexDirection: 'row', marginHorizontal: 20, backgroundColor: '#14141A', borderRadius: 16, padding: 16, marginBottom: 16 },
+  odometerUnit: { color: c.textMuted, fontSize: 24, marginLeft: 8 },
+  speedBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, backgroundColor: c.accent + '20', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  speedText: { color: c.accent, fontSize: 16, fontWeight: '600' },
+  statsRow: { flexDirection: 'row', marginHorizontal: 20, backgroundColor: c.surface, borderRadius: 16, padding: 16, marginBottom: 16 },
   stat: { flex: 1, alignItems: 'center', gap: 4 },
-  statDivider: { width: 1, backgroundColor: '#2A2A35' },
+  statDivider: { width: 1, backgroundColor: c.border },
   statValue: { color: '#FFF', fontSize: 18, fontWeight: '700' },
-  statLabel: { color: '#6B6B7B', fontSize: 11 },
-  locationsCard: { marginHorizontal: 20, backgroundColor: '#14141A', borderRadius: 16, padding: 16, marginBottom: 16 },
+  statLabel: { color: c.textMuted, fontSize: 11 },
+  locationsCard: { marginHorizontal: 20, backgroundColor: c.surface, borderRadius: 16, padding: 16, marginBottom: 16 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  locationLine: { width: 1, height: 16, backgroundColor: '#2A2A35', marginLeft: 5, marginVertical: 4 },
+  locationLine: { width: 1, height: 16, backgroundColor: c.border, marginLeft: 5, marginVertical: 4 },
   locationInfo: { flex: 1 },
-  locationLabel: { color: '#6B6B7B', fontSize: 10 },
+  locationLabel: { color: c.textMuted, fontSize: 10 },
   locationText: { color: '#FFF', fontSize: 13 },
   controls: { paddingHorizontal: 20, marginTop: 'auto', marginBottom: 16 },
-  startButton: { backgroundColor: '#00D9A5', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 16, gap: 12 },
+  startButton: { backgroundColor: c.accent, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 16, gap: 12 },
   startButtonText: { color: '#FFF', fontSize: 18, fontWeight: '700' },
-  endButton: { backgroundColor: '#FF6B6B', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 16, gap: 12 },
+  endButton: { backgroundColor: c.danger, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 16, gap: 12 },
   endButtonText: { color: '#FFF', fontSize: 18, fontWeight: '700' },
-  instructions: { color: '#6B6B7B', fontSize: 13, textAlign: 'center', lineHeight: 20, paddingHorizontal: 40, marginBottom: 20 },
+  instructions: { color: c.textMuted, fontSize: 13, textAlign: 'center', lineHeight: 20, paddingHorizontal: 40, marginBottom: 20 },
 });

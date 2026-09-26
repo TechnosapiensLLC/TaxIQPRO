@@ -16,6 +16,8 @@ import { useRouter } from 'expo-router';
 import { useSubscription } from '../src/store/subscriptionStore';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 interface NotificationSetting {
   id: string;
   title: string;
@@ -35,6 +37,8 @@ interface TaxDate {
 }
 
 export default function NotificationSettingsScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { checkFeatureAccess, currentTier } = useSubscription();
   const [permissionStatus, setPermissionStatus] = useState<string | null>(null);
@@ -46,7 +50,7 @@ export default function NotificationSettingsScreen() {
       title: 'Quarterly Tax Reminders',
       description: 'Get reminded 1 week before quarterly payments are due',
       icon: 'calendar',
-      color: '#FF6B6B',
+      color: c.danger,
       enabled: true,
       proFeature: true,
     },
@@ -55,7 +59,7 @@ export default function NotificationSettingsScreen() {
       title: 'Daily Receipt Reminder',
       description: 'Reminder to scan any receipts from today',
       icon: 'receipt',
-      color: '#00D9A5',
+      color: c.accent,
       enabled: false,
       proFeature: true,
     },
@@ -64,7 +68,7 @@ export default function NotificationSettingsScreen() {
       title: 'Mileage Logging',
       description: 'End of day reminder to log any trips',
       icon: 'car',
-      color: '#7C6BFF',
+      color: c.accentAlt,
       enabled: false,
       proFeature: true,
     },
@@ -73,7 +77,7 @@ export default function NotificationSettingsScreen() {
       title: 'Trip Detection',
       description: 'Notification when a trip is detected (Max only)',
       icon: 'navigate',
-      color: '#FFB84D',
+      color: c.warning,
       enabled: true,
       proFeature: true,
     },
@@ -82,7 +86,7 @@ export default function NotificationSettingsScreen() {
       title: 'Tax Filing Deadlines',
       description: 'Important IRS deadlines and extensions',
       icon: 'alert-circle',
-      color: '#FF6B6B',
+      color: c.danger,
       enabled: true,
       proFeature: false,
     },
@@ -91,7 +95,7 @@ export default function NotificationSettingsScreen() {
       title: 'Weekly Summary',
       description: 'Your earnings and deductions summary each week',
       icon: 'stats-chart',
-      color: '#00D9A5',
+      color: c.accent,
       enabled: false,
       proFeature: true,
     },
@@ -100,7 +104,7 @@ export default function NotificationSettingsScreen() {
       title: 'Audit Risk Alerts',
       description: 'Get alerted if your audit risk score increases',
       icon: 'shield',
-      color: '#FF6B6B',
+      color: c.danger,
       enabled: true,
       proFeature: true,
     },
@@ -109,7 +113,7 @@ export default function NotificationSettingsScreen() {
       title: 'Tax Saving Tips',
       description: 'Personalized tips to maximize deductions',
       icon: 'bulb',
-      color: '#FFB84D',
+      color: c.warning,
       enabled: false,
       proFeature: true,
     },
@@ -185,8 +189,8 @@ export default function NotificationSettingsScreen() {
       <Switch
         value={setting.enabled && (checkFeatureAccess('pushNotifications') || !setting.proFeature)}
         onValueChange={() => toggleSetting(setting.id)}
-        trackColor={{ false: '#2A2A35', true: setting.color }}
-        thumbColor="#FFFFFF"
+        trackColor={{ false: c.border, true: setting.color }}
+        thumbColor={c.text}
       />
     </View>
   );
@@ -205,14 +209,14 @@ export default function NotificationSettingsScreen() {
         {/* Permission Status */}
         {permissionStatus !== 'granted' && (
           <TouchableOpacity style={styles.permissionBanner} onPress={requestPermissions}>
-            <Ionicons name="notifications-off" size={24} color="#FFB84D" />
+            <Ionicons name="notifications-off" size={24} color={c.warning} />
             <View style={styles.permissionInfo}>
               <Text style={styles.permissionTitle}>Notifications Disabled</Text>
               <Text style={styles.permissionText}>
                 Enable notifications to get tax reminders
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#6B6B7B" />
+            <Ionicons name="chevron-forward" size={20} color={c.textMuted} />
           </TouchableOpacity>
         )}
 
@@ -238,11 +242,11 @@ export default function NotificationSettingsScreen() {
         <Text style={styles.sectionTitle}>Upcoming Tax Dates</Text>
         <View style={styles.datesCard}>
           {loadingDates ? (
-            <ActivityIndicator color="#00D9A5" style={{ padding: 20 }} />
+            <ActivityIndicator color={c.accent} style={{ padding: 20 }} />
           ) : taxDates.length > 0 ? (
             taxDates.map((taxDate, index) => (
               <View key={taxDate.id} style={styles.dateItem}>
-                <View style={[styles.dateDot, { backgroundColor: index === 0 ? '#FF6B6B' : index === 1 ? '#FFB84D' : '#7C6BFF' }]} />
+                <View style={[styles.dateDot, { backgroundColor: index === 0 ? c.danger : index === 1 ? c.warning : c.accentAlt }]} />
                 <View style={styles.dateInfo}>
                   <Text style={styles.dateTitle}>{taxDate.title}</Text>
                   <Text style={styles.dateValue}>{taxDate.date}</Text>
@@ -261,7 +265,7 @@ export default function NotificationSettingsScreen() {
                 <Text style={styles.daysLeft}>63 days</Text>
               </View>
               <View style={styles.dateItem}>
-                <View style={[styles.dateDot, { backgroundColor: '#FFB84D' }]} />
+                <View style={[styles.dateDot, { backgroundColor: c.warning }]} />
                 <View style={styles.dateInfo}>
                   <Text style={styles.dateTitle}>Q4 Estimated Tax Due</Text>
                   <Text style={styles.dateValue}>January 15, 2026</Text>
@@ -269,7 +273,7 @@ export default function NotificationSettingsScreen() {
                 <Text style={styles.daysLeft}>185 days</Text>
               </View>
               <View style={styles.dateItem}>
-                <View style={[styles.dateDot, { backgroundColor: '#7C6BFF' }]} />
+                <View style={[styles.dateDot, { backgroundColor: c.accentAlt }]} />
                 <View style={styles.dateInfo}>
                   <Text style={styles.dateTitle}>Tax Filing Deadline</Text>
                   <Text style={styles.dateValue}>April 15, 2026</Text>
@@ -284,10 +288,10 @@ export default function NotificationSettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -297,7 +301,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -311,29 +315,29 @@ const styles = StyleSheet.create({
   permissionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFB84D15',
+    backgroundColor: c.warning + '15',
     borderRadius: 14,
     padding: 16,
     marginBottom: 24,
     gap: 12,
     borderWidth: 1,
-    borderColor: '#FFB84D30',
+    borderColor: c.warning + '30',
   },
   permissionInfo: {
     flex: 1,
   },
   permissionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
   },
   permissionText: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 13,
     marginTop: 2,
   },
   sectionTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -341,7 +345,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   section: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     marginBottom: 24,
     overflow: 'hidden',
@@ -351,7 +355,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   settingIcon: {
     width: 40,
@@ -370,28 +374,28 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   settingTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '500',
   },
   proBadge: {
-    backgroundColor: '#FFB84D',
+    backgroundColor: c.warning,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   proBadgeText: {
-    color: '#0A0A0F',
+    color: c.bg,
     fontSize: 9,
     fontWeight: '700',
   },
   settingDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   datesCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 4,
   },
@@ -405,23 +409,23 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#FF6B6B',
+    backgroundColor: c.danger,
   },
   dateInfo: {
     flex: 1,
   },
   dateTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
   },
   dateValue: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   daysLeft: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
 });

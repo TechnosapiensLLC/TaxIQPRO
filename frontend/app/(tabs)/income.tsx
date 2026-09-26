@@ -15,6 +15,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/services/api';
 import { format, isValid, parseISO } from 'date-fns';
 
+import { useColors } from '../../src/context/ThemeContext';
+import type { Palette } from '../../src/theme';
 interface IncomeEntry {
   id: string;
   source: string;
@@ -56,6 +58,8 @@ const platformIcons: Record<string, string> = {
 };
 
 export default function IncomeScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [entries, setEntries] = useState<IncomeEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,7 +134,7 @@ export default function IncomeScreen() {
         <Ionicons
           name={(platformIcons[item.source] || 'cash') as any}
           size={24}
-          color="#00D9A5"
+          color={c.accent}
         />
       </View>
       <View style={styles.incomeInfo}>
@@ -199,7 +203,7 @@ export default function IncomeScreen() {
                 <Ionicons
                   name={(platformIcons[source] || 'cash') as any}
                   size={14}
-                  color="#00D9A5"
+                  color={c.accent}
                 />
                 <Text style={styles.sourceChipText}>{source}</Text>
               </View>
@@ -210,11 +214,11 @@ export default function IncomeScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
         </View>
       ) : entries.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="wallet-outline" size={64} color="#2A2A35" />
+          <Ionicons name="wallet-outline" size={64} color={c.border} />
           <Text style={styles.emptyTitle}>No income recorded</Text>
           <Text style={styles.emptySubtitle}>
             Add your gig earnings to track your tax obligations
@@ -237,7 +241,7 @@ export default function IncomeScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#00D9A5"
+              tintColor={c.accent}
             />
           }
           showsVerticalScrollIndicator={false}
@@ -247,10 +251,10 @@ export default function IncomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -260,12 +264,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   title: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
   },
   addButton: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -273,42 +277,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     marginHorizontal: 20,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#00D9A520',
+    borderColor: c.accent + '20',
   },
   summaryMain: {
     marginBottom: 16,
   },
   summaryLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginBottom: 4,
   },
   summaryValue: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 36,
     fontWeight: '700',
   },
   summaryRow: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: '#1A1A22',
+    borderTopColor: c.surfaceAlt,
     paddingTop: 16,
   },
   summaryItem: {
     flex: 1,
   },
   summaryItemLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   summaryItemValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
     marginTop: 2,
@@ -318,7 +322,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sourcesTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -330,14 +334,14 @@ const styles = StyleSheet.create({
   sourceChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     gap: 6,
   },
   sourceChipText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     fontWeight: '500',
   },
@@ -353,13 +357,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
@@ -367,7 +371,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -375,7 +379,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -386,7 +390,7 @@ const styles = StyleSheet.create({
   incomeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
@@ -395,7 +399,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#00D9A515',
+    backgroundColor: c.accent + '15',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -404,17 +408,17 @@ const styles = StyleSheet.create({
     marginLeft: 14,
   },
   incomeSource: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   incomeDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
   incomeDate: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     fontSize: 12,
     marginTop: 2,
   },
@@ -422,19 +426,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   incomeAmount: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 18,
     fontWeight: '700',
   },
   badge1099: {
-    backgroundColor: '#FFB84D20',
+    backgroundColor: c.warning + '20',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
     marginTop: 4,
   },
   badge1099Text: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 11,
     fontWeight: '600',
   },

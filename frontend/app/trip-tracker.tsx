@@ -15,6 +15,8 @@ import * as Location from 'expo-location';
 import { api } from '../src/services/api';
 import { format } from 'date-fns';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const IRS_MILEAGE_RATE = 0.70;
 
 interface LocationPoint {
@@ -45,6 +47,8 @@ const calculateDistanceBetweenPoints = (
 };
 
 export default function TripTrackerScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [isTracking, setIsTracking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -57,7 +61,7 @@ export default function TripTrackerScreen() {
   
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
   const lastPosition = useRef<LocationPoint | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTime = useRef<Date | null>(null);
   const startCoords = useRef<{ lat: number; lng: number } | null>(null);
   const endCoords = useRef<{ lat: number; lng: number } | null>(null);
@@ -323,7 +327,7 @@ export default function TripTrackerScreen() {
           <Ionicons 
             name="briefcase" 
             size={18} 
-            color={purpose === 'Business' ? '#FFF' : '#6B6B7B'} 
+            color={purpose === 'Business' ? '#FFF' : c.textMuted} 
           />
           <Text style={[
             styles.purposeButtonText,
@@ -343,7 +347,7 @@ export default function TripTrackerScreen() {
           <Ionicons 
             name="car" 
             size={18} 
-            color={purpose === 'Personal' ? '#FFF' : '#6B6B7B'} 
+            color={purpose === 'Personal' ? '#FFF' : c.textMuted} 
           />
           <Text style={[
             styles.purposeButtonText,
@@ -366,7 +370,7 @@ export default function TripTrackerScreen() {
         
         {isTracking && (
           <View style={styles.speedDisplay}>
-            <Ionicons name="speedometer" size={16} color="#00D9A5" />
+            <Ionicons name="speedometer" size={16} color={c.accent} />
             <Text style={styles.speedValue}>
               {currentSpeed.toFixed(0)} mph
             </Text>
@@ -377,21 +381,21 @@ export default function TripTrackerScreen() {
       {/* Stats Row */}
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
-          <Ionicons name="time-outline" size={20} color="#6B6B7B" />
+          <Ionicons name="time-outline" size={20} color={c.textMuted} />
           <Text style={styles.statValue}>{formatTime(elapsedTime)}</Text>
           <Text style={styles.statLabel}>Duration</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Ionicons name="cash-outline" size={20} color="#00D9A5" />
-          <Text style={[styles.statValue, { color: '#00D9A5' }]}>
+          <Ionicons name="cash-outline" size={20} color={c.accent} />
+          <Text style={[styles.statValue, { color: c.accent }]}>
             ${estimatedDeduction.toFixed(2)}
           </Text>
           <Text style={styles.statLabel}>Deduction</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Ionicons name="trending-up-outline" size={20} color="#6B6B7B" />
+          <Ionicons name="trending-up-outline" size={20} color={c.textMuted} />
           <Text style={styles.statValue}>
             {elapsedTime > 0 ? ((totalMiles / elapsedTime) * 3600).toFixed(0) : '0'}
           </Text>
@@ -413,7 +417,7 @@ export default function TripTrackerScreen() {
           </View>
           <View style={styles.locationLine} />
           <View style={styles.locationRow}>
-            <View style={[styles.locationDot, { backgroundColor: '#FF6B6B' }]} />
+            <View style={[styles.locationDot, { backgroundColor: c.danger }]} />
             <View style={styles.locationTextContainer}>
               <Text style={styles.locationLabel}>Current location</Text>
               <Text style={styles.locationValue} numberOfLines={1}>
@@ -491,10 +495,10 @@ export default function TripTrackerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -504,14 +508,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
   purposeToggle: {
     flexDirection: 'row',
     marginHorizontal: 20,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 4,
     marginBottom: 24,
@@ -526,13 +530,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   purposeButtonActive: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   purposeButtonActivePersonal: {
-    backgroundColor: '#6B6B7B',
+    backgroundColor: c.textMuted,
   },
   purposeButtonText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -544,7 +548,7 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
   },
   odometerLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 2,
@@ -555,13 +559,13 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   odometerValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 72,
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
   },
   odometerUnit: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 24,
     fontWeight: '500',
     marginLeft: 8,
@@ -571,20 +575,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 12,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
   speedValue: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 16,
     fontWeight: '600',
   },
   statsRow: {
     flexDirection: 'row',
     marginHorizontal: 20,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
@@ -596,21 +600,21 @@ const styles = StyleSheet.create({
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     marginHorizontal: 12,
   },
   statValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '700',
   },
   statLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
   },
   locationInfo: {
     marginHorizontal: 20,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -623,13 +627,13 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     marginRight: 12,
   },
   locationLine: {
     width: 2,
     height: 20,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     marginLeft: 5,
     marginVertical: 4,
   },
@@ -637,11 +641,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
   },
   locationValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -649,7 +653,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -657,19 +661,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statusBadgePaused: {
-    backgroundColor: '#FFB84D20',
+    backgroundColor: c.warning + '20',
   },
   statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   statusDotPaused: {
-    backgroundColor: '#FFB84D',
+    backgroundColor: c.warning,
   },
   statusText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1,
@@ -680,7 +684,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   startButton: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -689,7 +693,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   startButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 18,
     fontWeight: '700',
   },
@@ -699,7 +703,7 @@ const styles = StyleSheet.create({
   },
   pauseButton: {
     flex: 1,
-    backgroundColor: '#FFB84D',
+    backgroundColor: c.warning,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -709,7 +713,7 @@ const styles = StyleSheet.create({
   },
   resumeButton: {
     flex: 1,
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -719,7 +723,7 @@ const styles = StyleSheet.create({
   },
   endButton: {
     flex: 1,
-    backgroundColor: '#FF6B6B',
+    backgroundColor: c.danger,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -728,12 +732,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   controlButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   infoText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     textAlign: 'center',
     lineHeight: 20,

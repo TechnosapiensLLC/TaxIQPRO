@@ -16,9 +16,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/context/AuthContext';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 export default function SignupScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
-  const { signup } = useAuth();
+  const { signup, authError } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,6 +30,7 @@ export default function SignupScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [inviteCode, setInviteCode] = useState('');
 
   const handleSignup = async () => {
     if (!name.trim()) {
@@ -36,8 +41,8 @@ export default function SignupScreen() {
       Alert.alert('Error', 'Please enter your email');
       return;
     }
-    if (!password || password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+    if (!password || password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters');
       return;
     }
     if (password !== confirmPassword) {
@@ -51,13 +56,15 @@ export default function SignupScreen() {
 
     setLoading(true);
     try {
-      const success = await signup(email.trim().toLowerCase(), password, name.trim());
+      const success = await signup(email.trim().toLowerCase(), password, name.trim(), {
+        invite_code: inviteCode.trim() || undefined,
+      });
       if (success) {
         router.replace('/onboarding');
       } else {
-        Alert.alert('Error', 'Signup failed. Please try again.');
+        Alert.alert('Sign up failed', authError || 'Please check your details and try again.');
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -72,7 +79,7 @@ export default function SignupScreen() {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="close" size={28} color="#FFF" />
+            <Ionicons name="close" size={28} color={c.text} />
           </TouchableOpacity>
         </View>
 
@@ -84,7 +91,7 @@ export default function SignupScreen() {
         >
           <View style={styles.logoContainer}>
             <View style={styles.logoIcon}>
-              <Ionicons name="analytics" size={32} color="#00D9A5" />
+              <Ionicons name="analytics" size={32} color={c.accent} />
             </View>
           </View>
           
@@ -95,13 +102,13 @@ export default function SignupScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Full Name</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="person-outline" size={20} color="#6B6B7B" />
+                <Ionicons name="person-outline" size={20} color={c.textMuted} />
                 <TextInput
                   style={styles.input}
                   value={name}
                   onChangeText={setName}
                   placeholder="John Doe"
-                  placeholderTextColor="#4A4A5A"
+                  placeholderTextColor={c.borderStrong}
                   autoCapitalize="words"
                 />
               </View>
@@ -110,13 +117,13 @@ export default function SignupScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="mail-outline" size={20} color="#6B6B7B" />
+                <Ionicons name="mail-outline" size={20} color={c.textMuted} />
                 <TextInput
                   style={styles.input}
                   value={email}
                   onChangeText={setEmail}
                   placeholder="you@example.com"
-                  placeholderTextColor="#4A4A5A"
+                  placeholderTextColor={c.borderStrong}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -127,20 +134,20 @@ export default function SignupScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Password</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#6B6B7B" />
+                <Ionicons name="lock-closed-outline" size={20} color={c.textMuted} />
                 <TextInput
                   style={styles.input}
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="Min. 6 characters"
-                  placeholderTextColor="#4A4A5A"
+                  placeholder="Min. 8 characters"
+                  placeholderTextColor={c.borderStrong}
                   secureTextEntry={!showPassword}
                 />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                   <Ionicons
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
-                    color="#6B6B7B"
+                    color={c.textMuted}
                   />
                 </TouchableOpacity>
               </View>
@@ -149,14 +156,29 @@ export default function SignupScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Confirm Password</Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color="#6B6B7B" />
+                <Ionicons name="lock-closed-outline" size={20} color={c.textMuted} />
                 <TextInput
                   style={styles.input}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   placeholder="Re-enter password"
-                  placeholderTextColor="#4A4A5A"
+                  placeholderTextColor={c.borderStrong}
                   secureTextEntry={!showPassword}
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Store Chain Invite Code (optional)</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="business-outline" size={20} color={c.textMuted} />
+                <TextInput
+                  style={styles.input}
+                  value={inviteCode}
+                  onChangeText={(text) => setInviteCode(text.toUpperCase())}
+                  placeholder="Paste code from your manager"
+                  placeholderTextColor={c.borderStrong}
+                  autoCapitalize="characters"
                 />
               </View>
             </View>
@@ -167,7 +189,7 @@ export default function SignupScreen() {
             >
               <View style={[styles.checkbox, agreedToTerms && styles.checkboxChecked]}>
                 {agreedToTerms && (
-                  <Ionicons name="checkmark" size={14} color="#FFF" />
+                  <Ionicons name="checkmark" size={14} color={c.text} />
                 )}
               </View>
               <Text style={styles.termsText}>
@@ -182,11 +204,11 @@ export default function SignupScreen() {
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#FFF" />
+                <ActivityIndicator color={c.text} />
               ) : (
                 <>
                   <Text style={styles.signupButtonText}>Create Account</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#FFF" />
+                  <Ionicons name="arrow-forward" size={20} color={c.text} />
                 </>
               )}
             </TouchableOpacity>
@@ -200,11 +222,11 @@ export default function SignupScreen() {
 
           <View style={styles.socialButtons}>
             <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-google" size={20} color="#FFF" />
+              <Ionicons name="logo-google" size={20} color={c.text} />
               <Text style={styles.socialButtonText}>Google</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-apple" size={20} color="#FFF" />
+              <Ionicons name="logo-apple" size={20} color={c.text} />
               <Text style={styles.socialButtonText}>Apple</Text>
             </TouchableOpacity>
           </View>
@@ -224,10 +246,10 @@ export default function SignupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     paddingHorizontal: 20,
@@ -248,19 +270,19 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 16,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 32,
@@ -272,23 +294,23 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
     gap: 12,
   },
   input: {
     flex: 1,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     paddingVertical: 16,
   },
@@ -303,28 +325,28 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#00D9A5',
-    borderColor: '#00D9A5',
+    backgroundColor: c.accent,
+    borderColor: c.accent,
   },
   termsText: {
     flex: 1,
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     lineHeight: 20,
   },
   termsLink: {
-    color: '#00D9A5',
+    color: c.accent,
   },
   signupButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -334,7 +356,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   signupButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -346,10 +368,10 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
   },
   dividerText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginHorizontal: 16,
   },
@@ -362,15 +384,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
     gap: 8,
   },
   socialButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -380,11 +402,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   loginText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   loginLink: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 14,
     fontWeight: '600',
   },

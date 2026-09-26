@@ -15,6 +15,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useSubscription } from '../src/store/subscriptionStore';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const SUPPORTED_PLATFORMS = [
   { id: 'uber', name: 'Uber', icon: 'car', color: '#000000' },
   { id: 'lyft', name: 'Lyft', icon: 'car', color: '#FF00BF' },
@@ -27,6 +29,8 @@ const SUPPORTED_PLATFORMS = [
 ];
 
 export default function ImportCSVScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { checkFeatureAccess } = useSubscription();
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
@@ -124,7 +128,7 @@ export default function ImportCSVScreen() {
 
         <View style={styles.resultsContainer}>
           <View style={styles.successIcon}>
-            <Ionicons name="checkmark-circle" size={64} color="#00D9A5" />
+            <Ionicons name="checkmark-circle" size={64} color={c.accent} />
           </View>
           
           <Text style={styles.resultsTitle}>Successfully Imported!</Text>
@@ -136,15 +140,15 @@ export default function ImportCSVScreen() {
             </View>
             <View style={styles.resultRow}>
               <Text style={styles.resultLabel}>Imported</Text>
-              <Text style={[styles.resultValue, { color: '#00D9A5' }]}>{importResults.imported}</Text>
+              <Text style={[styles.resultValue, { color: c.accent }]}>{importResults.imported}</Text>
             </View>
             <View style={styles.resultRow}>
               <Text style={styles.resultLabel}>Duplicates Skipped</Text>
-              <Text style={[styles.resultValue, { color: '#FFB84D' }]}>{importResults.duplicates}</Text>
+              <Text style={[styles.resultValue, { color: c.warning }]}>{importResults.duplicates}</Text>
             </View>
             <View style={styles.resultRow}>
               <Text style={styles.resultLabel}>Errors</Text>
-              <Text style={[styles.resultValue, { color: '#FF6B6B' }]}>{importResults.errors}</Text>
+              <Text style={[styles.resultValue, { color: c.danger }]}>{importResults.errors}</Text>
             </View>
             <View style={[styles.resultRow, styles.totalRow]}>
               <Text style={styles.resultLabel}>Total Amount</Text>
@@ -177,7 +181,7 @@ export default function ImportCSVScreen() {
       >
         {/* Instructions */}
         <View style={styles.instructionCard}>
-          <Ionicons name="information-circle" size={24} color="#00D9A5" />
+          <Ionicons name="information-circle" size={24} color={c.accent} />
           <View style={styles.instructionText}>
             <Text style={styles.instructionTitle}>How to export your earnings</Text>
             <Text style={styles.instructionDescription}>
@@ -204,7 +208,7 @@ export default function ImportCSVScreen() {
               <Ionicons
                 name={platform.icon as any}
                 size={28}
-                color={selectedPlatform === platform.id ? '#00D9A5' : '#6B6B7B'}
+                color={selectedPlatform === platform.id ? c.accent : c.textMuted}
               />
               <Text
                 style={[
@@ -216,7 +220,7 @@ export default function ImportCSVScreen() {
               </Text>
               {selectedPlatform === platform.id && (
                 <View style={styles.checkIcon}>
-                  <Ionicons name="checkmark" size={14} color="#00D9A5" />
+                  <Ionicons name="checkmark" size={14} color={c.accent} />
                 </View>
               )}
             </TouchableOpacity>
@@ -262,10 +266,10 @@ export default function ImportCSVScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -275,7 +279,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -287,7 +291,7 @@ const styles = StyleSheet.create({
   },
   instructionCard: {
     flexDirection: 'row',
-    backgroundColor: '#00D9A515',
+    backgroundColor: c.accent + '15',
     borderRadius: 14,
     padding: 16,
     marginBottom: 24,
@@ -297,18 +301,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   instructionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 8,
   },
   instructionDescription: {
-    color: '#9999AA',
+    color: c.textTertiary,
     fontSize: 13,
     lineHeight: 20,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
@@ -321,7 +325,7 @@ const styles = StyleSheet.create({
   },
   platformCard: {
     width: '47%',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 18,
     alignItems: 'center',
@@ -330,17 +334,17 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   platformCardSelected: {
-    borderColor: '#00D9A5',
-    backgroundColor: '#0A1510',
+    borderColor: c.accent,
+    backgroundColor: c.brandTint,
   },
   platformName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
     marginTop: 10,
   },
   platformNameSelected: {
-    color: '#00D9A5',
+    color: c.accent,
   },
   checkIcon: {
     position: 'absolute',
@@ -351,7 +355,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 18,
     borderRadius: 14,
     gap: 10,
@@ -361,7 +365,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   uploadButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -369,7 +373,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   formatsTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -378,13 +382,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   formatBadge: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
   },
   formatBadgeText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -398,13 +402,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   resultsTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 32,
   },
   resultsCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 24,
     width: '100%',
@@ -416,34 +420,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   totalRow: {
     borderBottomWidth: 0,
     paddingTop: 16,
   },
   resultLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   resultValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   totalAmount: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 24,
     fontWeight: '700',
   },
   doneButton: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 48,
     paddingVertical: 16,
     borderRadius: 14,
   },
   doneButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },

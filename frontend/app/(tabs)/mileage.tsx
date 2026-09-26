@@ -15,6 +15,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/services/api';
 import { format, isValid, parseISO } from 'date-fns';
 
+import { useColors } from '../../src/context/ThemeContext';
+import type { Palette } from '../../src/theme';
 interface MileageEntry {
   id: string;
   start_location: string;
@@ -42,6 +44,8 @@ const formatDate = (dateStr: string): string => {
 };
 
 export default function MileageScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [entries, setEntries] = useState<MileageEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,13 +95,13 @@ export default function MileageScreen() {
   const getPurposeColor = (purpose: string) => {
     switch (purpose) {
       case 'Business':
-        return '#00D9A5';
+        return c.accent;
       case 'Personal':
-        return '#6B6B7B';
+        return c.textMuted;
       case 'Commute':
-        return '#FFB84D';
+        return c.warning;
       default:
-        return '#6B6B7B';
+        return c.textMuted;
     }
   };
 
@@ -141,14 +145,14 @@ export default function MileageScreen() {
 
       <View style={styles.tripRoute}>
         <View style={styles.routePoint}>
-          <Ionicons name="radio-button-on" size={14} color="#00D9A5" />
+          <Ionicons name="radio-button-on" size={14} color={c.accent} />
           <Text style={styles.routeText} numberOfLines={1}>
             {item.start_location}
           </Text>
         </View>
         <View style={styles.routeLine} />
         <View style={styles.routePoint}>
-          <Ionicons name="location" size={14} color="#FF6B6B" />
+          <Ionicons name="location" size={14} color={c.danger} />
           <Text style={styles.routeText} numberOfLines={1}>
             {item.end_location}
           </Text>
@@ -157,7 +161,7 @@ export default function MileageScreen() {
 
       <View style={styles.tripFooter}>
         <View style={styles.tripStat}>
-          <Ionicons name="speedometer-outline" size={16} color="#6B6B7B" />
+          <Ionicons name="speedometer-outline" size={16} color={c.textMuted} />
           <Text style={styles.tripStatText}>{item.distance.toFixed(1)} mi</Text>
         </View>
         {item.deduction_amount > 0 && (
@@ -196,13 +200,13 @@ export default function MileageScreen() {
           <Text style={styles.statLabel}>Total Miles</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statValue, { color: '#00D9A5' }]}>
+          <Text style={[styles.statValue, { color: c.accent }]}>
             {businessMiles.toFixed(0)}
           </Text>
           <Text style={styles.statLabel}>Business Miles</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={[styles.statValue, { color: '#7C6BFF' }]}>
+          <Text style={[styles.statValue, { color: c.accentAlt }]}>
             ${totalDeduction.toFixed(0)}
           </Text>
           <Text style={styles.statLabel}>Deduction</Text>
@@ -211,7 +215,7 @@ export default function MileageScreen() {
 
       {/* IRS Rate Info */}
       <View style={styles.rateInfo}>
-        <Ionicons name="information-circle" size={16} color="#6B6B7B" />
+        <Ionicons name="information-circle" size={16} color={c.textMuted} />
         <Text style={styles.rateText}>
           2025 IRS Rate: ${IRS_MILEAGE_RATE}/mile for business use
         </Text>
@@ -219,11 +223,11 @@ export default function MileageScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
         </View>
       ) : entries.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="car-outline" size={64} color="#2A2A35" />
+          <Ionicons name="car-outline" size={64} color={c.border} />
           <Text style={styles.emptyTitle}>No trips logged</Text>
           <Text style={styles.emptySubtitle}>
             Track your driving with GPS to maximize tax deductions
@@ -239,7 +243,7 @@ export default function MileageScreen() {
             style={styles.emptyButtonSecondary}
             onPress={() => router.push('/add-mileage')}
           >
-            <Ionicons name="create-outline" size={18} color="#7C6BFF" />
+            <Ionicons name="create-outline" size={18} color={c.accentAlt} />
             <Text style={styles.emptyButtonSecondaryText}>Add Manually</Text>
           </TouchableOpacity>
         </View>
@@ -253,7 +257,7 @@ export default function MileageScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#00D9A5"
+              tintColor={c.accent}
             />
           }
           showsVerticalScrollIndicator={false}
@@ -263,10 +267,10 @@ export default function MileageScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -276,7 +280,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   title: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
   },
@@ -286,7 +290,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   trackButton: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -294,7 +298,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addButton: {
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -309,18 +313,18 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 14,
     alignItems: 'center',
   },
   statValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 22,
     fontWeight: '700',
   },
   statLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
     marginTop: 4,
   },
@@ -332,7 +336,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   rateText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
   },
   loadingContainer: {
@@ -347,13 +351,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
@@ -361,7 +365,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -369,7 +373,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -382,7 +386,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   emptyButtonSecondaryText: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -391,7 +395,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   tripCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
@@ -420,7 +424,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   tripDate: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   tripRoute: {
@@ -434,12 +438,12 @@ const styles = StyleSheet.create({
   routeLine: {
     width: 2,
     height: 16,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     marginLeft: 6,
     marginVertical: 4,
   },
   routeText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     flex: 1,
   },
@@ -448,7 +452,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#1A1A22',
+    borderTopColor: c.surfaceAlt,
     paddingTop: 12,
   },
   tripStat: {
@@ -457,11 +461,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tripStatText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   tripDeduction: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 16,
     fontWeight: '700',
   },

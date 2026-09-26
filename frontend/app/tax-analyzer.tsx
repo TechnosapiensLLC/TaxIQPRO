@@ -16,6 +16,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 interface MissedDeduction {
   name: string;
   estimated_value: number;
@@ -54,6 +56,8 @@ interface AnalysisResult {
 }
 
 export default function TaxAnalyzerScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
@@ -188,20 +192,20 @@ export default function TaxAnalyzerScreen() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
-        return '#FF6B6B';
+        return c.danger;
       case 'medium':
-        return '#FFB84D';
+        return c.warning;
       case 'low':
-        return '#00D9A5';
+        return c.accent;
       default:
-        return '#6B6B7B';
+        return c.textMuted;
     }
   };
 
   const renderUploadSection = () => (
     <View style={styles.uploadSection}>
       <View style={styles.uploadIcon}>
-        <Ionicons name="document-text" size={48} color="#7C6BFF" />
+        <Ionicons name="document-text" size={48} color={c.accentAlt} />
       </View>
       <Text style={styles.uploadTitle}>Analyze Your Tax Filing</Text>
       <Text style={styles.uploadSubtitle}>
@@ -210,12 +214,12 @@ export default function TaxAnalyzerScreen() {
 
       <View style={styles.uploadButtons}>
         <TouchableOpacity style={styles.uploadButton} onPress={pickDocument}>
-          <Ionicons name="document" size={24} color="#FFFFFF" />
+          <Ionicons name="document" size={24} color={c.text} />
           <Text style={styles.uploadButtonText}>Upload PDF</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.uploadButton, styles.uploadButtonSecondary]} onPress={pickImage}>
-          <Ionicons name="image" size={24} color="#7C6BFF" />
+          <Ionicons name="image" size={24} color={c.accentAlt} />
           <Text style={[styles.uploadButtonText, styles.uploadButtonTextSecondary]}>Upload Image</Text>
         </TouchableOpacity>
       </View>
@@ -244,13 +248,13 @@ export default function TaxAnalyzerScreen() {
           onPress={() => setExpandedSection(isExpanded ? null : sectionKey)}
         >
           <View style={styles.sectionHeaderLeft}>
-            <Ionicons name={icon as any} size={22} color="#7C6BFF" />
+            <Ionicons name={icon as any} size={22} color={c.accentAlt} />
             <Text style={styles.sectionTitle}>{title}</Text>
           </View>
           <Ionicons
             name={isExpanded ? 'chevron-up' : 'chevron-down'}
             size={20}
-            color="#6B6B7B"
+            color={c.textMuted}
           />
         </TouchableOpacity>
         {isExpanded && <View style={styles.sectionContent}>{content}</View>}
@@ -271,7 +275,7 @@ export default function TaxAnalyzerScreen() {
       <View style={styles.resultsContainer}>
         {/* Important Disclaimer Banner */}
         <View style={styles.disclaimerBanner}>
-          <Ionicons name="warning" size={20} color="#FFB84D" />
+          <Ionicons name="warning" size={20} color={c.warning} />
           <View style={styles.disclaimerContent}>
             <Text style={styles.disclaimerTitle}>For Informational Purposes Only</Text>
             <Text style={styles.disclaimerText}>
@@ -296,7 +300,7 @@ export default function TaxAnalyzerScreen() {
                 : 'Many deductions are being missed'}
             </Text>
             <View style={styles.savingsHighlight}>
-              <Ionicons name="trending-up" size={18} color="#00D9A5" />
+              <Ionicons name="trending-up" size={18} color={c.accent} />
               <Text style={styles.savingsText}>
                 Potential Savings: {formatCurrency(analysis.potential_savings || totalMissedDeductions * 0.25)}
               </Text>
@@ -396,7 +400,7 @@ export default function TaxAnalyzerScreen() {
           <View>
             {analysis.insights.map((insight, index) => (
               <View key={index} style={styles.insightItem}>
-                <Ionicons name="checkmark-circle" size={18} color="#00D9A5" />
+                <Ionicons name="checkmark-circle" size={18} color={c.accent} />
                 <Text style={styles.insightText}>{insight}</Text>
               </View>
             ))}
@@ -431,7 +435,7 @@ export default function TaxAnalyzerScreen() {
             <View style={styles.importButtons}>
               {analysis.imported_data?.income_sources?.length > 0 && (
                 <TouchableOpacity style={styles.importButton} onPress={importIncome}>
-                  <Ionicons name="wallet" size={20} color="#FFFFFF" />
+                  <Ionicons name="wallet" size={20} color={c.text} />
                   <Text style={styles.importButtonText}>
                     Import {analysis.imported_data.income_sources.length} Income Sources
                   </Text>
@@ -442,7 +446,7 @@ export default function TaxAnalyzerScreen() {
                   style={[styles.importButton, styles.importButtonSecondary]}
                   onPress={importExpenses}
                 >
-                  <Ionicons name="receipt" size={20} color="#00D9A5" />
+                  <Ionicons name="receipt" size={20} color={c.accent} />
                   <Text style={[styles.importButtonText, styles.importButtonTextSecondary]}>
                     Import {analysis.imported_data.expense_categories.length} Expense Categories
                   </Text>
@@ -457,7 +461,7 @@ export default function TaxAnalyzerScreen() {
           style={styles.analyzeAnotherButton}
           onPress={() => setAnalysis(null)}
         >
-          <Ionicons name="add-circle" size={20} color="#7C6BFF" />
+          <Ionicons name="add-circle" size={20} color={c.accentAlt} />
           <Text style={styles.analyzeAnotherText}>Analyze Another Document</Text>
         </TouchableOpacity>
       </View>
@@ -469,11 +473,11 @@ export default function TaxAnalyzerScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Tax Filing Analyzer</Text>
         <View style={styles.headerBadge}>
-          <Ionicons name="sparkles" size={14} color="#FFB84D" />
+          <Ionicons name="sparkles" size={14} color={c.warning} />
           <Text style={styles.headerBadgeText}>AI</Text>
         </View>
       </View>
@@ -485,7 +489,7 @@ export default function TaxAnalyzerScreen() {
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#7C6BFF" />
+            <ActivityIndicator size="large" color={c.accentAlt} />
             <Text style={styles.loadingText}>Analyzing your tax filing...</Text>
             <Text style={styles.loadingSubtext}>
               Our AI is reviewing your document for missed deductions, tax-saving opportunities, and entity structure recommendations.
@@ -501,10 +505,10 @@ export default function TaxAnalyzerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -517,27 +521,27 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     flex: 1,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '700',
   },
   headerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFB84D20',
+    backgroundColor: c.warning + '20',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
     gap: 4,
   },
   headerBadgeText: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -557,20 +561,20 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 25,
-    backgroundColor: '#7C6BFF15',
+    backgroundColor: c.accentAlt + '15',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
   },
   uploadTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 12,
     textAlign: 'center',
   },
   uploadSubtitle: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 15,
     lineHeight: 22,
     textAlign: 'center',
@@ -586,7 +590,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 10,
@@ -594,30 +598,30 @@ const styles = StyleSheet.create({
   uploadButtonSecondary: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#7C6BFF',
+    borderColor: c.accentAlt,
   },
   uploadButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
   uploadButtonTextSecondary: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
   },
   supportedFormats: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     padding: 16,
     borderRadius: 12,
     width: '100%',
   },
   supportedFormatsTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 6,
   },
   supportedFormatsText: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
     lineHeight: 20,
   },
@@ -628,14 +632,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   loadingText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
     marginTop: 24,
     marginBottom: 8,
   },
   loadingSubtext: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
@@ -647,9 +651,9 @@ const styles = StyleSheet.create({
   // Disclaimer Banner
   disclaimerBanner: {
     flexDirection: 'row',
-    backgroundColor: '#FFB84D15',
+    backgroundColor: c.warning + '15',
     borderWidth: 1,
-    borderColor: '#FFB84D40',
+    borderColor: c.warning + '40',
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
@@ -660,7 +664,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   disclaimerTitle: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 4,
@@ -672,32 +676,32 @@ const styles = StyleSheet.create({
   },
   // Score Card
   scoreCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#7C6BFF30',
+    borderColor: c.accentAlt + '30',
   },
   scoreCircle: {
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#7C6BFF',
+    borderColor: c.accentAlt,
   },
   scoreValue: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 28,
     fontWeight: '800',
   },
   scoreLabel: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 10,
     fontWeight: '600',
   },
@@ -706,13 +710,13 @@ const styles = StyleSheet.create({
     marginLeft: 18,
   },
   scoreTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 17,
     fontWeight: '700',
     marginBottom: 4,
   },
   scoreSubtitle: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 10,
@@ -720,7 +724,7 @@ const styles = StyleSheet.create({
   savingsHighlight: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A515',
+    backgroundColor: c.accent + '15',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -728,13 +732,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   savingsText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 13,
     fontWeight: '600',
   },
   // Sections
   sectionContainer: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     marginBottom: 14,
     overflow: 'hidden',
@@ -751,7 +755,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -759,7 +763,7 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 0,
     borderTopWidth: 1,
-    borderTopColor: '#1A1A22',
+    borderTopColor: c.surfaceAlt,
   },
   // Overview Grid
   overviewGrid: {
@@ -770,33 +774,33 @@ const styles = StyleSheet.create({
   },
   overviewItem: {
     width: '48%',
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     padding: 14,
     borderRadius: 10,
   },
   overviewLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 4,
   },
   overviewValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
   },
   incomeValue: {
-    color: '#00D9A5',
+    color: c.accent,
   },
   deductionValue: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
   },
   missedValue: {
-    color: '#FF6B6B',
+    color: c.danger,
   },
   // Deductions
   deductionItem: {
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     padding: 14,
     borderRadius: 10,
     marginBottom: 10,
@@ -808,18 +812,18 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   deductionName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
     flex: 1,
   },
   deductionAmount: {
-    color: '#FF6B6B',
+    color: c.danger,
     fontSize: 15,
     fontWeight: '700',
   },
   deductionDesc: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 12,
     lineHeight: 18,
   },
@@ -827,24 +831,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FF6B6B15',
+    backgroundColor: c.danger + '15',
     padding: 14,
     borderRadius: 10,
     marginTop: 6,
   },
   totalMissedLabel: {
-    color: '#FF6B6B',
+    color: c.danger,
     fontSize: 14,
     fontWeight: '600',
   },
   totalMissedValue: {
-    color: '#FF6B6B',
+    color: c.danger,
     fontSize: 18,
     fontWeight: '800',
   },
   // Recommendations
   recItem: {
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     padding: 14,
     borderRadius: 10,
     marginBottom: 10,
@@ -861,18 +865,18 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   priorityText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 9,
     fontWeight: '800',
   },
   recTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
     flex: 1,
   },
   recDesc: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
     lineHeight: 19,
   },
@@ -884,7 +888,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   insightText: {
-    color: '#DDDDDD',
+    color: c.textSecondary,
     fontSize: 13,
     lineHeight: 20,
     flex: 1,
@@ -893,7 +897,7 @@ const styles = StyleSheet.create({
   featureItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     padding: 12,
     borderRadius: 10,
     marginBottom: 10,
@@ -903,12 +907,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   featurePriorityText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -916,33 +920,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   featureName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   featureReason: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 12,
     lineHeight: 18,
   },
   // Import Section
   importSection: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 18,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#00D9A530',
+    borderColor: c.accent + '30',
   },
   importTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 17,
     fontWeight: '700',
     marginBottom: 6,
   },
   importSubtitle: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
     marginBottom: 16,
   },
@@ -953,7 +957,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
@@ -961,15 +965,15 @@ const styles = StyleSheet.create({
   importButtonSecondary: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#00D9A5',
+    borderColor: c.accent,
   },
   importButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 14,
     fontWeight: '600',
   },
   importButtonTextSecondary: {
-    color: '#00D9A5',
+    color: c.accent,
   },
   // Analyze Another
   analyzeAnotherButton: {
@@ -978,14 +982,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#7C6BFF',
+    borderColor: c.accentAlt,
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
     marginTop: 10,
   },
   analyzeAnotherText: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 15,
     fontWeight: '600',
   },

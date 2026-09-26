@@ -13,8 +13,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/context/AuthContext';
-import { LinearGradient } from 'expo-linear-gradient';
 
+import { useColors, C } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const { width, height } = Dimensions.get('window');
 
 const FEATURES = [
@@ -22,37 +23,37 @@ const FEATURES = [
     icon: 'camera',
     title: 'AI Receipt Scanning',
     description: 'Snap a photo and our AI extracts vendor, amount, date, and category in seconds',
-    color: '#00D9A5',
+    color: C.accent,
   },
   {
     icon: 'car',
     title: 'Smart Mileage Tracking',
     description: 'Automatic trip detection with IRS-compliant logging and deduction calculation',
-    color: '#7C6BFF',
+    color: C.accentAlt,
   },
   {
     icon: 'calculator',
     title: 'Real-Time Tax Estimates',
     description: 'See your quarterly tax obligations update as you add expenses and income',
-    color: '#FFB84D',
+    color: C.warning,
   },
   {
     icon: 'shield-checkmark',
     title: 'Audit Risk Score',
     description: 'AI analyzes your deductions and warns you about potential audit triggers',
-    color: '#FF6B6B',
+    color: C.danger,
   },
   {
     icon: 'chatbubbles',
     title: 'AI Tax Coach',
     description: 'Get personalized tax advice and deduction recommendations 24/7',
-    color: '#00D9A5',
+    color: C.accent,
   },
   {
     icon: 'document-text',
     title: 'IRS-Ready Exports',
     description: 'Generate Schedule C, mileage logs, and expense reports with one tap',
-    color: '#7C6BFF',
+    color: C.accentAlt,
   },
 ];
 
@@ -68,6 +69,8 @@ const STATS = [
 ];
 
 export default function LandingPage() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { isAuthenticated, isLoading, user } = useAuth();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -101,7 +104,7 @@ export default function LandingPage() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Ionicons name="pulse" size={48} color="#00D9A5" />
+        <Ionicons name="pulse" size={48} color={c.accent} />
       </View>
     );
   }
@@ -117,7 +120,7 @@ export default function LandingPage() {
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <View style={styles.logoIcon}>
-              <Ionicons name="analytics" size={24} color="#00D9A5" />
+              <Ionicons name="analytics" size={24} color={c.accent} />
             </View>
             <Text style={styles.logoText}>TaxIQ Pro</Text>
           </View>
@@ -138,7 +141,7 @@ export default function LandingPage() {
         >
           <View style={styles.badgeContainer}>
             <View style={styles.badge}>
-              <Ionicons name="sparkles" size={14} color="#FFB84D" />
+              <Ionicons name="sparkles" size={14} color={c.warning} />
               <Text style={styles.badgeText}>Powered by AI</Text>
             </View>
           </View>
@@ -229,19 +232,19 @@ export default function LandingPage() {
           
           <View style={styles.differentiators}>
             <View style={styles.diffItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#00D9A5" />
+              <Ionicons name="checkmark-circle" size={20} color={c.accent} />
               <Text style={styles.diffText}>MCC Code Intelligence</Text>
             </View>
             <View style={styles.diffItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#00D9A5" />
+              <Ionicons name="checkmark-circle" size={20} color={c.accent} />
               <Text style={styles.diffText}>Bank Statement PDF Parsing</Text>
             </View>
             <View style={styles.diffItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#00D9A5" />
+              <Ionicons name="checkmark-circle" size={20} color={c.accent} />
               <Text style={styles.diffText}>Voluntary Declaration with Audit Warnings</Text>
             </View>
             <View style={styles.diffItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#00D9A5" />
+              <Ionicons name="checkmark-circle" size={20} color={c.accent} />
               <Text style={styles.diffText}>7-Year IRS Record Storage</Text>
             </View>
           </View>
@@ -292,14 +295,14 @@ export default function LandingPage() {
             onPress={() => router.push('/signup')}
           >
             <Text style={styles.ctaButtonText}>Get Started Free</Text>
-            <Ionicons name="arrow-forward" size={20} color="#0A0A0F" />
+            <Ionicons name="arrow-forward" size={20} color={c.bg} />
           </TouchableOpacity>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
           <View style={styles.footerLogo}>
-            <Ionicons name="analytics" size={20} color="#00D9A5" />
+            <Ionicons name="analytics" size={20} color={c.accent} />
             <Text style={styles.footerLogoText}>TaxIQ Pro</Text>
           </View>
           <Text style={styles.footerCompany}>A Technosapiens, LLC Product</Text>
@@ -319,14 +322,14 @@ export default function LandingPage() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -351,12 +354,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     justifyContent: 'center',
     alignItems: 'center',
   },
   logoText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '700',
     marginLeft: 10,
@@ -366,10 +369,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   loginButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -385,26 +388,26 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFB84D15',
+    backgroundColor: c.warning + '15',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     gap: 6,
   },
   badgeText: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 12,
     fontWeight: '600',
   },
   heroTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 36,
     fontWeight: '800',
     lineHeight: 44,
     marginBottom: 16,
   },
   heroSubtitle: {
-    color: '#9999AA',
+    color: c.textTertiary,
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 30,
@@ -417,14 +420,14 @@ const styles = StyleSheet.create({
   primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -433,10 +436,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   secondaryButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -448,12 +451,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 28,
     fontWeight: '800',
   },
   statLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 4,
   },
@@ -461,7 +464,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   professionsTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: '600',
     paddingHorizontal: 20,
@@ -472,16 +475,16 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   professionChip: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
     marginRight: 10,
   },
   professionText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     fontWeight: '500',
   },
@@ -490,13 +493,13 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 12,
   },
   sectionSubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 30,
@@ -505,11 +508,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   featureCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#1A1A22',
+    borderColor: c.surfaceAlt,
   },
   featureIcon: {
     width: 48,
@@ -520,29 +523,29 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   featureTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 8,
   },
   featureDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     lineHeight: 20,
   },
   aboutSection: {
     paddingHorizontal: 20,
     paddingVertical: 40,
-    backgroundColor: '#0F0F15',
+    backgroundColor: c.bgSunken,
   },
   aboutText: {
-    color: '#9999AA',
+    color: c.textTertiary,
     fontSize: 15,
     lineHeight: 24,
     marginBottom: 16,
   },
   highlightText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontWeight: '600',
   },
   differentiators: {
@@ -555,7 +558,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   diffText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -567,32 +570,32 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   pricingCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
-    borderColor: '#1A1A22',
+    borderColor: c.surfaceAlt,
   },
   popularCard: {
-    borderColor: '#00D9A550',
-    backgroundColor: '#0A1A15',
+    borderColor: c.accent + '50',
+    backgroundColor: c.brandTint,
   },
   popularBadge: {
     position: 'absolute',
     top: -12,
     right: 20,
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 10,
   },
   popularBadgeText: {
-    color: '#0A0A0F',
+    color: c.bg,
     fontSize: 11,
     fontWeight: '700',
   },
   planName: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -600,18 +603,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   planPrice: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 36,
     fontWeight: '800',
     marginBottom: 8,
   },
   planPeriod: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 16,
     fontWeight: '500',
   },
   planDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     marginBottom: 20,
   },
@@ -619,24 +622,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   planFeature: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
   },
   ctaSection: {
     paddingHorizontal: 20,
     paddingVertical: 50,
     alignItems: 'center',
-    backgroundColor: '#0F0F15',
+    backgroundColor: c.bgSunken,
   },
   ctaTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 26,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 12,
   },
   ctaSubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 24,
@@ -644,14 +647,14 @@ const styles = StyleSheet.create({
   ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 32,
     paddingVertical: 18,
     borderRadius: 14,
     gap: 8,
   },
   ctaButtonText: {
-    color: '#0A0A0F',
+    color: c.bg,
     fontSize: 18,
     fontWeight: '700',
   },
@@ -666,18 +669,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   footerLogoText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '700',
     marginLeft: 8,
   },
   footerCompany: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginBottom: 4,
   },
   footerCopyright: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     fontSize: 12,
     marginBottom: 16,
   },
@@ -686,11 +689,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerLink: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   footerDivider: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     marginHorizontal: 8,
   },
 });

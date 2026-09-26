@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "taxiqpro",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
@@ -16,14 +16,15 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Auto-detect trips while driving",
         "NSPhotoLibraryUsageDescription": "Upload receipt photos from your gallery",
         "NSMotionUsageDescription": "Detect vehicle motion for automatic trip logging",
-        "NSFaceIDUsageDescription": "Secure login with Face ID"
+        "NSFaceIDUsageDescription": "Secure login with Face ID",
+        "NSPhotoLibraryAddUsageDescription": "Save exported tax reports to your photos"
       },
       "bundleIdentifier": "com.emergent.quickrevenueapps.gh3w0j"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#0A0A0F"
+        "backgroundColor": "#05164D"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
@@ -34,7 +35,12 @@
         "READ_EXTERNAL_STORAGE",
         "USE_BIOMETRIC",
         "USE_FINGERPRINT",
-        "ACTIVITY_RECOGNITION"
+        "ACTIVITY_RECOGNITION",
+        "READ_MEDIA_IMAGES",
+        "WRITE_EXTERNAL_STORAGE",
+        "POST_NOTIFICATIONS",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
       ],
       "package": "com.emergent.quickrevenueapps.gh3w0j"
     },
@@ -51,7 +57,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#0A0A0F"
+          "backgroundColor": "#05164D"
         }
       ],
       [
@@ -67,7 +73,14 @@
           "locationAlwaysAndWhenInUsePermission": "Auto-detect trips while driving"
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Upload receipt photos from your gallery"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

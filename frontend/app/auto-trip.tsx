@@ -16,7 +16,11 @@ import * as Location from 'expo-location';
 import { useSubscription } from '../src/store/subscriptionStore';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 export default function AutoTripScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { checkFeatureAccess } = useSubscription();
   const [autoDetectEnabled, setAutoDetectEnabled] = useState(false);
@@ -124,7 +128,7 @@ export default function AutoTripScreen() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <View style={styles.heroIcon}>
-            <Ionicons name="navigate" size={40} color="#7C6BFF" />
+            <Ionicons name="navigate" size={40} color={c.accentAlt} />
           </View>
           <Text style={styles.heroTitle}>Never Miss a Mile</Text>
           <Text style={styles.heroDescription}>
@@ -143,8 +147,8 @@ export default function AutoTripScreen() {
           <Switch
             value={autoDetectEnabled}
             onValueChange={handleToggleAutoDetect}
-            trackColor={{ false: '#2A2A35', true: '#7C6BFF' }}
-            thumbColor="#FFFFFF"
+            trackColor={{ false: c.border, true: c.accentAlt }}
+            thumbColor={c.text}
           />
         </View>
 
@@ -153,7 +157,7 @@ export default function AutoTripScreen() {
           <Ionicons
             name={locationPermission === 'granted' || locationPermission === 'background' ? 'shield-checkmark' : 'warning'}
             size={24}
-            color={locationPermission === 'granted' || locationPermission === 'background' ? '#00D9A5' : '#FFB84D'}
+            color={locationPermission === 'granted' || locationPermission === 'background' ? c.accent : c.warning}
           />
           <View style={styles.permissionInfo}>
             <Text style={styles.permissionTitle}>Location Permission</Text>
@@ -273,7 +277,7 @@ export default function AutoTripScreen() {
 
         {/* Battery Info */}
         <View style={styles.batteryInfo}>
-          <Ionicons name="battery-half" size={20} color="#6B6B7B" />
+          <Ionicons name="battery-half" size={20} color={c.textMuted} />
           <Text style={styles.batteryText}>
             Uses ~2-3% battery per day with optimized tracking
           </Text>
@@ -283,10 +287,10 @@ export default function AutoTripScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -296,7 +300,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -315,19 +319,19 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   heroTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 12,
   },
   heroDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
@@ -335,30 +339,30 @@ const styles = StyleSheet.create({
   mainToggle: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#7C6BFF30',
+    borderColor: c.accentAlt + '30',
   },
   toggleInfo: {
     flex: 1,
   },
   toggleTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   toggleDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
   permissionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 24,
@@ -368,46 +372,46 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   permissionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
   },
   permissionStatus: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   permissionButton: {
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
   },
   permissionButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 13,
     fontWeight: '600',
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
   },
   settingCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
   },
   settingTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 4,
   },
   settingDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginBottom: 16,
   },
@@ -419,19 +423,19 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     alignItems: 'center',
   },
   optionButtonActive: {
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
   },
   optionText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     fontWeight: '500',
   },
   optionTextActive: {
-    color: '#FFFFFF',
+    color: c.text,
   },
   howItWorks: {
     gap: 16,
@@ -446,12 +450,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   howItWorksNumberText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -459,13 +463,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   howItWorksTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
     marginBottom: 4,
   },
   howItWorksDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
   },
   batteryInfo: {
@@ -475,7 +479,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   batteryText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
 });

@@ -13,6 +13,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { useSubscription, SUBSCRIPTION_PLANS } from '../../src/store/subscriptionStore';
 
+import { useColors, useTheme } from '../../src/context/ThemeContext';
+import type { Palette } from '../../src/theme';
 interface SettingsItem {
   icon: string;
   label: string;
@@ -23,6 +25,9 @@ interface SettingsItem {
 }
 
 export default function SettingsScreen() {
+  const c = useColors();
+  const { mode, setMode } = useTheme();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { user, logout } = useAuth();
   const { currentTier, loadSubscription, getCurrentPlan } = useSubscription();
@@ -72,28 +77,28 @@ export default function SettingsScreen() {
           icon: 'analytics',
           label: 'Tax Filing Analyzer',
           sublabel: 'AI reviews filings for missed deductions & S-Corp',
-          color: '#7C6BFF',
+          color: c.accentAlt,
           onPress: () => router.push('/tax-analyzer'),
         },
         {
           icon: 'sparkles',
           label: 'AI Tax Coach',
           sublabel: 'Get personalized tax advice',
-          color: '#FFB84D',
+          color: c.warning,
           onPress: () => router.push('/tax-coach'),
         },
         {
           icon: 'flame',
           label: 'Gas Finder',
           sublabel: 'Find cheapest gas near you',
-          color: '#FF6B6B',
+          color: c.danger,
           onPress: () => router.push('/gas-finder'),
         },
         {
           icon: 'swap-horizontal',
           label: 'Swipe to Classify',
           sublabel: 'Quickly categorize expenses',
-          color: '#00D9A5',
+          color: c.accent,
           tier: 'pro' as const,
           onPress: () => router.push('/swipe-classify'),
         },
@@ -101,7 +106,7 @@ export default function SettingsScreen() {
           icon: 'cloud-upload',
           label: 'Import CSV Earnings',
           sublabel: 'Import from Uber, Lyft, DoorDash',
-          color: '#7C6BFF',
+          color: c.accentAlt,
           tier: 'pro' as const,
           onPress: () => router.push('/import-csv'),
         },
@@ -109,7 +114,7 @@ export default function SettingsScreen() {
           icon: 'document-text',
           label: 'Bank Statement Upload',
           sublabel: 'AI extracts deductions from PDFs',
-          color: '#7C6BFF',
+          color: c.accentAlt,
           tier: 'max' as const,
           onPress: () => router.push('/bank-statement'),
         },
@@ -117,7 +122,7 @@ export default function SettingsScreen() {
           icon: 'navigate',
           label: 'Auto Trip Detection',
           sublabel: 'Never miss a deductible mile',
-          color: '#7C6BFF',
+          color: c.accentAlt,
           tier: 'max' as const,
           onPress: () => router.push('/auto-trip'),
         },
@@ -130,28 +135,54 @@ export default function SettingsScreen() {
           icon: 'trending-up',
           label: 'Deduction Maximizer',
           sublabel: 'Find deductions you may be missing',
-          color: '#00D9A5',
+          color: c.accent,
           onPress: () => router.push('/deduction-maximizer'),
         },
         {
           icon: 'calculator',
           label: 'Quarterly Estimates',
           sublabel: 'Calculate your estimated tax payments',
-          color: '#7C6BFF',
+          color: c.accentAlt,
           onPress: () => router.push('/quarterly-estimator'),
         },
         {
           icon: 'document-text',
           label: 'Export Reports',
           sublabel: 'Schedule C, mileage logs, CPA package',
-          color: '#FFB84D',
+          color: c.warning,
           onPress: () => router.push('/export-report'),
         },
         {
           icon: 'shield-checkmark',
           label: 'Audit Risk Analysis',
           sublabel: 'Review your deduction safety',
-          color: '#FF6B6B',
+          color: c.danger,
+        },
+      ],
+    },
+    {
+      title: 'Store Chain',
+      items: [
+        {
+          icon: 'storefront',
+          label: 'Stores & Team',
+          sublabel: 'Manage stores, managers and drivers',
+          color: c.accent,
+          onPress: () => router.push('/store-chain'),
+        },
+        {
+          icon: 'calculator',
+          label: 'Accounting Export',
+          sublabel: 'QuickBooks, Xero and Sage import files',
+          color: c.accentAlt,
+          onPress: () => router.push('/export-report'),
+        },
+        {
+          icon: 'options',
+          label: 'Chart of Accounts',
+          sublabel: 'Map categories to your accounting file',
+          color: c.warning,
+          onPress: () => router.push('/coa-mapping'),
         },
       ],
     },
@@ -162,27 +193,27 @@ export default function SettingsScreen() {
           icon: 'person',
           label: 'Profile',
           sublabel: user?.email || 'Manage your account',
-          color: '#6B6B7B',
+          color: c.textMuted,
         },
         {
           icon: 'briefcase',
           label: 'Profession Settings',
           sublabel: 'Update your work type',
-          color: '#6B6B7B',
+          color: c.textMuted,
           onPress: () => router.push('/onboarding'),
         },
         {
           icon: 'notifications',
           label: 'Notifications',
           sublabel: 'Tax reminders & alerts',
-          color: '#6B6B7B',
+          color: c.textMuted,
           onPress: () => router.push('/notifications'),
         },
         {
           icon: 'finger-print',
           label: 'Security',
           sublabel: 'Biometric login, 2FA',
-          color: '#6B6B7B',
+          color: c.textMuted,
         },
       ],
     },
@@ -193,19 +224,19 @@ export default function SettingsScreen() {
           icon: 'help-circle',
           label: 'Help Center',
           sublabel: 'FAQs and guides',
-          color: '#6B6B7B',
+          color: c.textMuted,
         },
         {
           icon: 'chatbubbles',
           label: 'Contact Support',
           sublabel: 'Get help from our team',
-          color: '#6B6B7B',
+          color: c.textMuted,
         },
         {
           icon: 'star',
           label: 'Rate TaxIQ Pro',
           sublabel: 'Help us improve',
-          color: '#6B6B7B',
+          color: c.textMuted,
         },
       ],
     },
@@ -244,9 +275,9 @@ export default function SettingsScreen() {
           )}
         </View>
         {isLocked ? (
-          <Ionicons name="lock-closed" size={18} color="#4A4A5A" />
+          <Ionicons name="lock-closed" size={18} color={c.borderStrong} />
         ) : (
-          <Ionicons name="chevron-forward" size={20} color="#4A4A5A" />
+          <Ionicons name="chevron-forward" size={20} color={c.borderStrong} />
         )}
       </TouchableOpacity>
     );
@@ -277,7 +308,7 @@ export default function SettingsScreen() {
               <Ionicons 
                 name={currentTier === 'free' ? 'person' : 'diamond'} 
                 size={24} 
-                color={currentTier === 'max' ? '#7C6BFF' : currentTier === 'pro' ? '#00D9A5' : '#6B6B7B'} 
+                color={currentTier === 'max' ? c.accentAlt : currentTier === 'pro' ? c.accent : c.textMuted} 
               />
             </View>
             <View style={styles.subscriptionText}>
@@ -298,6 +329,31 @@ export default function SettingsScreen() {
           )}
         </TouchableOpacity>
 
+        {/* Appearance */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Appearance</Text>
+          <View style={styles.sectionContent}>
+            <View style={styles.themeRow}>
+              {(['light', 'dark', 'system'] as const).map((m) => (
+                <TouchableOpacity
+                  key={m}
+                  style={[styles.themeChip, mode === m && styles.themeChipActive]}
+                  onPress={() => setMode(m)}
+                >
+                  <Ionicons
+                    name={m === 'light' ? 'sunny' : m === 'dark' ? 'moon' : 'phone-portrait'}
+                    size={18}
+                    color={mode === m ? c.onPrimary : c.textMuted}
+                  />
+                  <Text style={[styles.themeChipText, mode === m && styles.themeChipTextActive]}>
+                    {m === 'system' ? 'Auto' : m === 'light' ? 'Light' : 'Dark'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
         {sections.map((section, sectionIndex) => (
           <View key={sectionIndex} style={styles.section}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -311,14 +367,14 @@ export default function SettingsScreen() {
 
         {/* Sign Out Button */}
         <TouchableOpacity style={styles.signOutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
+          <Ionicons name="log-out-outline" size={22} color={c.danger} />
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
 
         {/* App Info */}
         <View style={styles.appInfo}>
           <View style={styles.appLogoRow}>
-            <Ionicons name="analytics" size={20} color="#00D9A5" />
+            <Ionicons name="analytics" size={20} color={c.accent} />
             <Text style={styles.appName}>TaxIQ Pro</Text>
           </View>
           <Text style={styles.appCompany}>A Technosapiens, LLC Product</Text>
@@ -332,17 +388,47 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
+  themeRow: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 14,
+  },
+  themeChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: c.surfaceAlt,
+    borderWidth: 1,
+    borderColor: c.border,
+    minHeight: 48,
+  },
+  themeChipActive: {
+    backgroundColor: c.accent,
+    borderColor: c.accent,
+  },
+  themeChipText: {
+    color: c.textMuted,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  themeChipTextActive: {
+    color: c.onPrimary,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
   title: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
   },
@@ -354,12 +440,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   subscriptionBanner: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 18,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -377,36 +463,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   freeIcon: {
-    backgroundColor: '#6B6B7B20',
+    backgroundColor: c.textMuted + '20',
   },
   proIcon: {
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
   },
   maxIcon: {
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
   },
   subscriptionText: {
     marginLeft: 14,
     flex: 1,
   },
   subscriptionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 17,
     fontWeight: '600',
   },
   subscriptionSubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   upgradeBadge: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
   },
   upgradeBadgeText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -414,7 +500,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -422,7 +508,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionContent: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     overflow: 'hidden',
   },
@@ -433,7 +519,7 @@ const styles = StyleSheet.create({
   },
   settingsItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   itemIcon: {
     width: 40,
@@ -452,12 +538,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   itemLabel: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '500',
   },
   itemLabelLocked: {
-    color: '#6B6B7B',
+    color: c.textMuted,
   },
   tierBadge: {
     paddingHorizontal: 6,
@@ -465,18 +551,18 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   tierBadgePro: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   tierBadgeMax: {
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
   },
   tierBadgeText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 9,
     fontWeight: '700',
   },
   itemSublabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
@@ -484,16 +570,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 24,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FF6B6B30',
+    borderColor: c.danger + '30',
   },
   signOutText: {
-    color: '#FF6B6B',
+    color: c.danger,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -507,23 +593,23 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   appName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
   },
   appCompany: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 4,
   },
   appVersion: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
   appCopyright: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     fontSize: 11,
     marginTop: 8,
   },

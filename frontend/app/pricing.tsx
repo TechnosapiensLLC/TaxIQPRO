@@ -13,9 +13,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSubscription, SUBSCRIPTION_PLANS, SubscriptionTier } from '../src/store/subscriptionStore';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const { width } = Dimensions.get('window');
 
 export default function PricingScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { currentTier, setTier } = useSubscription();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -121,7 +125,7 @@ export default function PricingScreen() {
             >
               {isPopular && (
                 <View style={styles.popularBadge}>
-                  <Ionicons name="star" size={12} color="#0A0A0F" />
+                  <Ionicons name="star" size={12} color={c.bg} />
                   <Text style={styles.popularBadgeText}>Most Popular</Text>
                 </View>
               )}
@@ -155,7 +159,7 @@ export default function PricingScreen() {
                     <Ionicons
                       name="checkmark-circle"
                       size={18}
-                      color={plan.id === 'free' ? '#6B6B7B' : '#00D9A5'}
+                      color={plan.id === 'free' ? c.textMuted : c.accent}
                     />
                     <Text style={styles.featureText}>{feature}</Text>
                   </View>
@@ -190,7 +194,7 @@ export default function PricingScreen() {
 
         {/* Money Back Guarantee */}
         <View style={styles.guarantee}>
-          <Ionicons name="shield-checkmark" size={24} color="#00D9A5" />
+          <Ionicons name="shield-checkmark" size={24} color={c.accent} />
           <View style={styles.guaranteeText}>
             <Text style={styles.guaranteeTitle}>30-Day Money Back Guarantee</Text>
             <Text style={styles.guaranteeDescription}>
@@ -203,10 +207,10 @@ export default function PricingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -216,7 +220,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -229,7 +233,7 @@ const styles = StyleSheet.create({
   },
   billingToggle: {
     flexDirection: 'row',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 4,
     marginBottom: 24,
@@ -244,29 +248,29 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   billingOptionActive: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   billingOptionText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
   billingOptionTextActive: {
-    color: '#FFFFFF',
+    color: c.text,
   },
   saveBadge: {
-    backgroundColor: '#FFB84D',
+    backgroundColor: c.warning,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   saveBadgeText: {
-    color: '#0A0A0F',
+    color: c.bg,
     fontSize: 10,
     fontWeight: '700',
   },
   planCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 24,
     marginBottom: 16,
@@ -274,11 +278,11 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   planCardPopular: {
-    borderColor: '#00D9A550',
-    backgroundColor: '#0A1510',
+    borderColor: c.accent + '50',
+    backgroundColor: c.brandTint,
   },
   planCardCurrent: {
-    borderColor: '#7C6BFF50',
+    borderColor: c.accentAlt + '50',
   },
   popularBadge: {
     position: 'absolute',
@@ -286,14 +290,14 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
     gap: 4,
   },
   popularBadgeText: {
-    color: '#0A0A0F',
+    color: c.bg,
     fontSize: 11,
     fontWeight: '700',
   },
@@ -304,23 +308,23 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   planName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 22,
     fontWeight: '700',
   },
   planTagline: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
   currentBadge: {
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
   currentBadgeText: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -330,12 +334,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   priceAmount: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 36,
     fontWeight: '800',
   },
   pricePeriod: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 16,
     marginLeft: 4,
   },
@@ -349,34 +353,34 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   featureText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     flex: 1,
   },
   selectButton: {
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
   selectButtonPopular: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   selectButtonCurrent: {
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
   },
   selectButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   selectButtonTextCurrent: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
   },
   guarantee: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A510',
+    backgroundColor: c.accent + '10',
     borderRadius: 14,
     padding: 16,
     gap: 14,
@@ -385,12 +389,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   guaranteeTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
   },
   guaranteeDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },

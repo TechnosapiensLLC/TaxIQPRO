@@ -12,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/context/AuthContext';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const { width } = Dimensions.get('window');
 
 const PROFESSIONS = [
@@ -45,6 +47,8 @@ const GIG_PLATFORMS = [
 ];
 
 export default function OnboardingScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { updateUser } = useAuth();
   const [step, setStep] = useState(1);
@@ -117,7 +121,7 @@ export default function OnboardingScreen() {
                   <Ionicons
                     name={profession.icon as any}
                     size={24}
-                    color={selectedProfession === profession.id ? '#00D9A5' : '#6B6B7B'}
+                    color={selectedProfession === profession.id ? c.accent : c.textMuted}
                   />
                 </View>
                 <Text
@@ -131,7 +135,7 @@ export default function OnboardingScreen() {
                 <Text style={styles.professionDescription}>{profession.description}</Text>
                 {selectedProfession === profession.id && (
                   <View style={styles.checkmark}>
-                    <Ionicons name="checkmark-circle" size={24} color="#00D9A5" />
+                    <Ionicons name="checkmark-circle" size={24} color={c.accent} />
                   </View>
                 )}
               </TouchableOpacity>
@@ -178,7 +182,7 @@ export default function OnboardingScreen() {
                 <Ionicons
                   name={platform.icon as any}
                   size={22}
-                  color={selectedPlatforms.includes(platform.id) ? '#00D9A5' : '#6B6B7B'}
+                  color={selectedPlatforms.includes(platform.id) ? c.accent : c.textMuted}
                 />
                 <Text
                   style={[
@@ -190,7 +194,7 @@ export default function OnboardingScreen() {
                 </Text>
                 {selectedPlatforms.includes(platform.id) && (
                   <View style={styles.platformCheck}>
-                    <Ionicons name="checkmark" size={14} color="#00D9A5" />
+                    <Ionicons name="checkmark" size={14} color={c.accent} />
                   </View>
                 )}
               </TouchableOpacity>
@@ -219,10 +223,10 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -234,16 +238,16 @@ const styles = StyleSheet.create({
   progressBar: {
     flex: 1,
     height: 4,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 2,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     borderRadius: 2,
   },
   skipText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   stepContainer: {
@@ -254,13 +258,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   stepTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
     marginBottom: 8,
   },
   stepSubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 15,
     lineHeight: 22,
   },
@@ -275,7 +279,7 @@ const styles = StyleSheet.create({
   },
   professionCard: {
     width: (width - 52) / 2,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 2,
@@ -283,32 +287,32 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   professionCardSelected: {
-    borderColor: '#00D9A5',
-    backgroundColor: '#0A1A15',
+    borderColor: c.accent,
+    backgroundColor: c.brandTint,
   },
   professionIcon: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
   professionIconSelected: {
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
   },
   professionName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   professionNameSelected: {
-    color: '#00D9A5',
+    color: c.accent,
   },
   professionDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   checkmark: {
@@ -324,7 +328,7 @@ const styles = StyleSheet.create({
   },
   platformCard: {
     width: (width - 60) / 3,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 14,
     alignItems: 'center',
@@ -333,18 +337,18 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   platformCardSelected: {
-    borderColor: '#00D9A5',
-    backgroundColor: '#0A1A15',
+    borderColor: c.accent,
+    backgroundColor: c.brandTint,
   },
   platformName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 12,
     fontWeight: '500',
     marginTop: 8,
     textAlign: 'center',
   },
   platformNameSelected: {
-    color: '#00D9A5',
+    color: c.accent,
   },
   platformCheck: {
     position: 'absolute',
@@ -355,7 +359,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 16,
     borderRadius: 14,
     marginBottom: 20,
@@ -365,7 +369,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   continueButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -379,13 +383,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
   },
   backButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -394,13 +398,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
   },
   finishButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },

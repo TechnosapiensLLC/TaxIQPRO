@@ -15,16 +15,20 @@ import { useRouter } from 'expo-router';
 import { api } from '../../src/services/api';
 import { useAuth } from '../../src/context/AuthContext';
 
+import { useColors, C } from '../../src/context/ThemeContext';
+import type { Palette } from '../../src/theme';
 const { width } = Dimensions.get('window');
 
 const getAuditRiskLevel = (score: number) => {
-  if (score < 25) return { label: 'Low', color: '#00D9A5' };
-  if (score < 50) return { label: 'Medium', color: '#FFB84D' };
+  if (score < 25) return { label: 'Low', color: C.success };
+  if (score < 50) return { label: 'Medium', color: C.warning };
   if (score < 75) return { label: 'High', color: '#FF8844' };
-  return { label: 'Very High', color: '#FF6B6B' };
+  return { label: 'Very High', color: C.danger };
 };
 
 export default function DashboardScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { user, logout } = useAuth();
   const [dashboard, setDashboard] = useState<any>(null);
@@ -80,7 +84,7 @@ export default function DashboardScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
           <Text style={styles.loadingText}>Loading your tax data...</Text>
         </View>
       </SafeAreaView>
@@ -96,7 +100,7 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#00D9A5"
+            tintColor={c.accent}
           />
         }
         showsVerticalScrollIndicator={false}
@@ -107,7 +111,7 @@ export default function DashboardScreen() {
             <Text style={styles.greeting}>Welcome back, {user?.name || 'there'}!</Text>
             <View style={styles.logoRow}>
               <View style={styles.logoIcon}>
-                <Ionicons name="analytics" size={18} color="#00D9A5" />
+                <Ionicons name="analytics" size={18} color={c.accent} />
               </View>
               <Text style={styles.title}>TaxIQ Pro</Text>
             </View>
@@ -123,7 +127,7 @@ export default function DashboardScreen() {
         {/* Tax Summary Card */}
         <View style={styles.taxCard}>
           <View style={styles.taxCardHeader}>
-            <Ionicons name="calculator" size={24} color="#00D9A5" />
+            <Ionicons name="calculator" size={24} color={c.accent} />
             <Text style={styles.taxCardTitle}>Estimated Quarterly Tax</Text>
           </View>
           <Text style={styles.taxAmount}>
@@ -186,7 +190,7 @@ export default function DashboardScreen() {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, styles.incomeCard]}>
-            <Ionicons name="trending-up" size={28} color="#00D9A5" />
+            <Ionicons name="trending-up" size={28} color={c.accent} />
             <Text style={styles.statValue}>
               ${dashboard?.total_income?.toLocaleString() || '0'}
             </Text>
@@ -196,7 +200,7 @@ export default function DashboardScreen() {
             </Text>
           </View>
           <View style={[styles.statCard, styles.expenseCard]}>
-            <Ionicons name="receipt-outline" size={28} color="#FF6B6B" />
+            <Ionicons name="receipt-outline" size={28} color={c.danger} />
             <Text style={styles.statValue}>
               ${dashboard?.total_expenses?.toLocaleString() || '0'}
             </Text>
@@ -210,7 +214,7 @@ export default function DashboardScreen() {
         {/* Mileage Card */}
         <View style={styles.mileageCard}>
           <View style={styles.mileageHeader}>
-            <Ionicons name="car" size={24} color="#7C6BFF" />
+            <Ionicons name="car" size={24} color={c.accentAlt} />
             <View style={styles.mileageInfo}>
               <Text style={styles.mileageTitle}>Mileage Deduction</Text>
               <Text style={styles.mileageTrips}>
@@ -230,8 +234,8 @@ export default function DashboardScreen() {
             style={styles.actionButton}
             onPress={() => router.push('/scan')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#00D9A520' }]}>
-              <Ionicons name="camera" size={24} color="#00D9A5" />
+            <View style={[styles.actionIcon, { backgroundColor: c.accent + '20' }]}>
+              <Ionicons name="camera" size={24} color={c.accent} />
             </View>
             <Text style={styles.actionText}>Scan Receipt</Text>
           </TouchableOpacity>
@@ -239,8 +243,8 @@ export default function DashboardScreen() {
             style={styles.actionButton}
             onPress={() => router.push('/add-mileage')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#7C6BFF20' }]}>
-              <Ionicons name="navigate" size={24} color="#7C6BFF" />
+            <View style={[styles.actionIcon, { backgroundColor: c.accentAlt + '20' }]}>
+              <Ionicons name="navigate" size={24} color={c.accentAlt} />
             </View>
             <Text style={styles.actionText}>Log Trip</Text>
           </TouchableOpacity>
@@ -248,8 +252,8 @@ export default function DashboardScreen() {
             style={styles.actionButton}
             onPress={() => router.push('/add-income')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#FFB84D20' }]}>
-              <Ionicons name="add-circle" size={24} color="#FFB84D" />
+            <View style={[styles.actionIcon, { backgroundColor: c.warning + '20' }]}>
+              <Ionicons name="add-circle" size={24} color={c.warning} />
             </View>
             <Text style={styles.actionText}>Add Income</Text>
           </TouchableOpacity>
@@ -262,7 +266,7 @@ export default function DashboardScreen() {
         >
           <View style={styles.coachContent}>
             <View style={styles.coachIconContainer}>
-              <Ionicons name="sparkles" size={28} color="#FFB84D" />
+              <Ionicons name="sparkles" size={28} color={c.warning} />
             </View>
             <View style={styles.coachTextContainer}>
               <Text style={styles.coachTitle}>AI Tax Coach</Text>
@@ -271,7 +275,7 @@ export default function DashboardScreen() {
               </Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#6B6B7B" />
+          <Ionicons name="chevron-forward" size={24} color={c.textMuted} />
         </TouchableOpacity>
 
         {/* Export Report CTA */}
@@ -279,22 +283,22 @@ export default function DashboardScreen() {
           style={styles.exportCard}
           onPress={() => router.push('/export-report')}
         >
-          <Ionicons name="document-text" size={24} color="#7C6BFF" />
+          <Ionicons name="document-text" size={24} color={c.accentAlt} />
           <View style={styles.exportText}>
             <Text style={styles.exportTitle}>Generate Tax Report</Text>
             <Text style={styles.exportSubtitle}>Export for TurboTax, CPA, or IRS</Text>
           </View>
-          <Ionicons name="download-outline" size={24} color="#7C6BFF" />
+          <Ionicons name="download-outline" size={24} color={c.accentAlt} />
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   loadingContainer: {
     flex: 1,
@@ -302,7 +306,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     marginTop: 12,
     fontSize: 14,
   },
@@ -320,7 +324,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   greeting: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     marginBottom: 4,
   },
@@ -332,18 +336,18 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
   },
   title: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
   },
   coachButton: {
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -351,12 +355,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   taxCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 24,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#00D9A530',
+    borderColor: c.accent + '30',
   },
   taxCardHeader: {
     flexDirection: 'row',
@@ -364,25 +368,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   taxCardTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 10,
   },
   taxAmount: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 42,
     fontWeight: '700',
     marginBottom: 4,
   },
   taxSubtext: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginBottom: 20,
   },
   taxBreakdown: {
     flexDirection: 'row',
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 12,
     padding: 16,
   },
@@ -392,25 +396,25 @@ const styles = StyleSheet.create({
   },
   breakdownDivider: {
     width: 1,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
   },
   breakdownLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginBottom: 4,
   },
   breakdownValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
   auditRiskCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   auditRiskHeader: {
     flexDirection: 'row',
@@ -418,7 +422,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   auditRiskTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 10,
@@ -438,7 +442,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   auditRiskMax: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 18,
     fontWeight: '500',
   },
@@ -453,7 +457,7 @@ const styles = StyleSheet.create({
   },
   auditRiskBar: {
     height: 6,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 3,
     marginBottom: 12,
   },
@@ -462,7 +466,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   auditRiskTip: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -473,36 +477,36 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 18,
   },
   incomeCard: {
     borderWidth: 1,
-    borderColor: '#00D9A520',
+    borderColor: c.accent + '20',
   },
   expenseCard: {
     borderWidth: 1,
-    borderColor: '#FF6B6B20',
+    borderColor: c.danger + '20',
   },
   statValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 22,
     fontWeight: '700',
     marginTop: 12,
   },
   statLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
   statCount: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     fontSize: 12,
     marginTop: 2,
   },
   mileageCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 18,
     flexDirection: 'row',
@@ -510,7 +514,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#7C6BFF20',
+    borderColor: c.accentAlt + '20',
   },
   mileageHeader: {
     flexDirection: 'row',
@@ -520,21 +524,21 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   mileageTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   mileageTrips: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
   },
   mileageValue: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 22,
     fontWeight: '700',
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
@@ -557,19 +561,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   actionText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     fontWeight: '500',
   },
   coachCard: {
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 16,
     padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#FFB84D30',
+    borderColor: c.warning + '30',
     marginBottom: 12,
   },
   coachContent: {
@@ -581,7 +585,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#FFB84D15',
+    backgroundColor: c.warning + '15',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -590,35 +594,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   coachTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   coachDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
   exportCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#7C6BFF20',
+    borderColor: c.accentAlt + '20',
   },
   exportText: {
     flex: 1,
     marginLeft: 14,
   },
   exportTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
   },
   exportSubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },

@@ -14,7 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 export default function ScanScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
@@ -70,7 +74,7 @@ export default function ScanScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
         </View>
       </SafeAreaView>
     );
@@ -80,7 +84,7 @@ export default function ScanScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.permissionContainer}>
-          <Ionicons name="camera-outline" size={64} color="#2A2A35" />
+          <Ionicons name="camera-outline" size={64} color={c.border} />
           <Text style={styles.permissionTitle}>Camera Access Required</Text>
           <Text style={styles.permissionText}>
             Receipt Brain needs camera access to scan your receipts
@@ -116,7 +120,7 @@ export default function ScanScreen() {
         <View style={styles.resultContainer}>
           <View style={styles.resultCard}>
             <View style={styles.resultHeader}>
-              <Ionicons name="checkmark-circle" size={48} color="#00D9A5" />
+              <Ionicons name="checkmark-circle" size={48} color={c.accent} />
               <Text style={styles.resultTitle}>Receipt Analyzed</Text>
               <Text style={styles.confidenceText}>
                 {Math.round((scanResult.confidence || 0) * 100)}% confidence
@@ -152,7 +156,7 @@ export default function ScanScreen() {
 
             {scanResult.suggested_deduction && (
               <View style={styles.deductionInfo}>
-                <Ionicons name="bulb" size={20} color="#FFB84D" />
+                <Ionicons name="bulb" size={20} color={c.warning} />
                 <Text style={styles.deductionText}>
                   {scanResult.suggested_deduction}
                 </Text>
@@ -214,7 +218,7 @@ export default function ScanScreen() {
       <View style={styles.controls}>
         {scanning ? (
           <View style={styles.scanningContainer}>
-            <ActivityIndicator size="large" color="#00D9A5" />
+            <ActivityIndicator size="large" color={c.accent} />
             <Text style={styles.scanningText}>Analyzing receipt...</Text>
           </View>
         ) : (
@@ -234,17 +238,17 @@ export default function ScanScreen() {
           router.push('/add-receipt');
         }}
       >
-        <Ionicons name="create-outline" size={18} color="#6B6B7B" />
+        <Ionicons name="create-outline" size={18} color={c.textMuted} />
         <Text style={styles.manualButtonText}>Enter manually instead</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   loadingContainer: {
     flex: 1,
@@ -258,26 +262,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   permissionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '600',
     marginTop: 20,
   },
   permissionText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 10,
   },
   permissionButton: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
     marginTop: 24,
   },
   permissionButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   cancelButtonText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   header: {
@@ -296,7 +300,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -323,7 +327,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 30,
     height: 30,
-    borderColor: '#00D9A5',
+    borderColor: c.accent,
   },
   topLeft: {
     top: 0,
@@ -354,7 +358,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
   },
   instructionText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     marginTop: 20,
     textShadowColor: '#000',
@@ -369,23 +373,23 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#FFFFFF20',
+    backgroundColor: c.text + '20',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 4,
-    borderColor: '#00D9A5',
+    borderColor: c.accent,
   },
   captureButtonInner: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   scanningContainer: {
     alignItems: 'center',
   },
   scanningText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     marginTop: 12,
   },
@@ -397,7 +401,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   manualButtonText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   resultContainer: {
@@ -405,7 +409,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   resultCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 20,
     padding: 24,
   },
@@ -414,19 +418,19 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   resultTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '600',
     marginTop: 12,
   },
   confidenceText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
   resultDetails: {
     borderTopWidth: 1,
-    borderTopColor: '#1A1A22',
+    borderTopColor: c.surfaceAlt,
     paddingTop: 20,
   },
   resultRow: {
@@ -436,30 +440,30 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   resultLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   resultValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '500',
   },
   amountValue: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 20,
     fontWeight: '700',
   },
   deductionInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FFB84D15',
+    backgroundColor: c.warning + '15',
     borderRadius: 12,
     padding: 14,
     marginTop: 8,
     gap: 10,
   },
   deductionText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     flex: 1,
     lineHeight: 20,
@@ -474,13 +478,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
   },
   retakeButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -489,13 +493,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },

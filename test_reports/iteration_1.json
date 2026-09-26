@@ -1,0 +1,39 @@
+{
+  "summary": "TaxIQ Pro backend + frontend testing. Backend: 29/29 pytest tests pass covering auth (register/login/me/PATCH), auth enforcement on 18 protected endpoints, cross-tenant isolation, receipts/mileage CRUD with new fields (is_business, barcode, line_items, distance_miles), full exports suite (TurboTax CSV/JSON, Schedule C CSV+PDF, mileage log CSV+PDF, receipt summary PDF, CPA package JSON+PDF — all correct content-type, %PDF magic bytes and non-trivial payload), scope=business|personal + year filters, all 6 accounting formats (QBO CSV header exact match after Excel BOM stripping, IIF balanced TRNS/SPL/ENDTRNS, Sage debit=credit), COA mapping GET/PUT + reflection in xero_csv, full org flow (create chain, stores, invites, driver registration with invite_code, role changes, business-only reports privacy, service-token issuance limited to chain_owner + rejected on /auth/me), QBO graceful degradation (status=configured:false, authorize=503, accounts=409/503, sync=409/503, no 500), new categories present, tax-coach/deduction/quarterly require auth. Frontend (mobile viewport 390x844): login with demo@taxiqpro.app works and dashboard shows user-scoped numbers; unauthenticated /export-report and /store-chain correctly redirect to /login; export-report page renders TAX YEAR card, all 5 download buttons, Accounting card lists all 5 software options, QuickBooks Online sync card shows not-configured state gracefully; TurboTax CSV button triggers real GET /api/export/turbotax.csv?year=2026 (verified via network intercept); Schedule C PDF button triggers real GET /api/export/schedule-c.pdf; /coa-mapping loads 19 category inputs and PUT /api/export/coa-mapping succeeds on Save; /store-chain shows chain name (QuickStop Chain), Chain Owner badge, stores list, add-store field, Team, Invite Manager/Invite Driver buttons with real codes, per-employee, Generate API token, and the privacy note; /add-receipt shows Business/Personal segmented control with Business default and helper text changes correctly (\"Counted toward your deductions and chain reports.\" -> \"Kept private — never shared with your store chain.\") when Personal is chosen; store chips row appears; Settings Appearance section renders Light/Dark/Auto chips and switching to Light repaints the app (verified in screenshots) and survives reload.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/export/accounting?format=quickbooks_online_csv", "issue": "Response is prefixed with a UTF-8 BOM (\\ufeff) before the 'Date,Description,Amount' header. This is Excel-friendly but not strictly what the PRD says ('exactly header Date,Description,Amount'). Consumers using utf-8 (not utf-8-sig) will see the BOM as part of the first header cell. Consider documenting or removing the BOM."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Login form / most interactive elements", "issue": "No testID / data-testid attributes on the email input, password input, Sign In button, Business/Personal chips, Light/Dark/Auto chips, Save Mapping, Invite Manager/Driver, Generate API token, Download buttons. Forces text-based selectors and hurts long-term test stability.", "testID": "n/a", "priority": "LOW"},
+      {"component": "app/store-chain.tsx", "issue": "Two stores named 'Store 12 - Main St' with the same store_number '#12' are rendered — appears to be a duplicate seed. Cosmetic but confusing.", "testID": "n/a", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Settings", "issues": ["Light theme correctly repaints the app; theme persists on reload. No pure-black surfaces observed in dark mode. Only nit: dev-only warning 'GO_BACK was not handled by any navigator' when arriving on /settings via direct URL (no history) — harmless."]}
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/test_backend.py", "/app/backend/tests/conftest.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Optional: strip the UTF-8 BOM from the quickbooks_online_csv output, or document that it is intentional for Excel compatibility.",
+    "Add testID props to interactive elements (login inputs, Sign In, Business/Personal chips, Light/Dark/Auto chips, Save Mapping, Invite Manager/Driver, Generate API token, TurboTax/PDF/CSV download buttons) so future test runs can rely on data-testid selectors.",
+    "Investigate duplicate 'Store 12 - Main St' entries in the demo chain (dedupe seed script)."
+  ],
+  "critical_code_review_comments": [
+    "server.py is ~1660+ lines — should be split by domain (receipts, mileage, income, dashboard, ai, gas, filing) into routes/ modules for maintainability (>700 line rule).",
+    "server.py still contains legacy unauthenticated POST /api/users and GET /api/users/{email} that predate the JWT rollout; consider removing or authenticating them so they cannot be misused.",
+    "POST /api/receipts/scan and POST /api/upload/statement and POST /api/upload/csv are unauthenticated — anyone can burn AI credits by hitting them. Recommend adding CurrentUser dependency.",
+    "core/security.py:22 uses os.environ['JWT_SECRET'] which will crash the process at import time if the key is missing — fine for prod but noisy in dev; consider a clear startup error message."
+  ],
+  "updated_files": ["/app/backend/tests/conftest.py", "/app/backend/tests/test_backend.py"],
+  "success_rate": {"backend": "100% (29/29)", "frontend": "100% of critical flows executed"},
+  "seed_data_creation": "Each backend test registers its own random user (prefix _unique_email) — no shared state. Test users are prefixed with TEST_ vendor/description for identification. No cleanup performed (test users linger in DB); safe because emails are UUID-suffixed.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Frontend backend URL var in this project is EXPO_PUBLIC_BACKEND_URL (not EXPO_BACKEND_URL). Backend tests use BASE_URL from that env or fall back to the preview URL. Interactive UI elements currently lack testID attributes so tests use get_by_text; when main agent adds testIDs, switch selectors to [data-testid=...]. Demo user demo@taxiqpro.app / TaxIQdemo2026! is a chain_owner of 'QuickStop Chain' with two Store 12 entries and open invite codes.",
+  "rca_of_issue": "No blocking issues found."
+}

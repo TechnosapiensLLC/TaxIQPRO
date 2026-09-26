@@ -15,6 +15,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { api } from '../../src/services/api';
 import { format, isValid, parseISO } from 'date-fns';
 
+import { useColors } from '../../src/context/ThemeContext';
+import type { Palette } from '../../src/theme';
 interface Receipt {
   id: string;
   vendor: string;
@@ -39,6 +41,8 @@ const formatDate = (dateStr: string): string => {
 };
 
 export default function ReceiptsScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +122,7 @@ export default function ReceiptsScreen() {
         <Ionicons
           name={getCategoryIcon(item.category)}
           size={24}
-          color={item.is_deductible ? '#00D9A5' : '#FF6B6B'}
+          color={item.is_deductible ? c.accent : c.danger}
         />
       </View>
       <View style={styles.receiptInfo}>
@@ -134,7 +138,7 @@ export default function ReceiptsScreen() {
         <Text style={styles.receiptAmount}>${item.amount.toFixed(2)}</Text>
         {item.is_deductible && (
           <View style={styles.deductibleBadge}>
-            <Ionicons name="checkmark" size={12} color="#00D9A5" />
+            <Ionicons name="checkmark" size={12} color={c.accent} />
             <Text style={styles.deductibleText}>Deductible</Text>
           </View>
         )}
@@ -174,7 +178,7 @@ export default function ReceiptsScreen() {
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
-          <Text style={[styles.summaryValue, { color: '#00D9A5' }]}>
+          <Text style={[styles.summaryValue, { color: c.accent }]}>
             ${totalDeductible.toFixed(2)}
           </Text>
           <Text style={styles.summaryLabel}>Deductible</Text>
@@ -183,11 +187,11 @@ export default function ReceiptsScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
         </View>
       ) : receipts.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="receipt-outline" size={64} color="#2A2A35" />
+          <Ionicons name="receipt-outline" size={64} color={c.border} />
           <Text style={styles.emptyTitle}>No receipts yet</Text>
           <Text style={styles.emptySubtitle}>
             Scan your first receipt to start tracking expenses
@@ -210,7 +214,7 @@ export default function ReceiptsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#00D9A5"
+              tintColor={c.accent}
             />
           }
           showsVerticalScrollIndicator={false}
@@ -220,10 +224,10 @@ export default function ReceiptsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -233,7 +237,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   title: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
   },
@@ -242,7 +246,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   addButton: {
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scanButton: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -259,7 +263,7 @@ const styles = StyleSheet.create({
   },
   summary: {
     flexDirection: 'row',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     marginHorizontal: 20,
     borderRadius: 16,
     padding: 16,
@@ -271,15 +275,15 @@ const styles = StyleSheet.create({
   },
   summaryDivider: {
     width: 1,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
   },
   summaryValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
   },
   summaryLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 4,
   },
@@ -295,13 +299,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
@@ -309,7 +313,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
@@ -317,7 +321,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   emptyButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -328,7 +332,7 @@ const styles = StyleSheet.create({
   receiptCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
@@ -337,7 +341,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -346,17 +350,17 @@ const styles = StyleSheet.create({
     marginLeft: 14,
   },
   receiptVendor: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   receiptCategory: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
   receiptDate: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     fontSize: 12,
     marginTop: 2,
   },
@@ -364,14 +368,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   receiptAmount: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '700',
   },
   deductibleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00D9A515',
+    backgroundColor: c.accent + '15',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -379,7 +383,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   deductibleText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 11,
     fontWeight: '500',
   },

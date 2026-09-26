@@ -1,13 +1,18 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { api } from '../services/api';
+import { tokenStorage } from '../services/tokenStorage';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
-  profession?: string;
+  role: 'individual' | 'chain_owner' | 'store_owner' | 'store_manager' | 'driver_employee';
+  organization_id?: string | null;
+  store_id?: string | null;
+  profession?: string | null;
   gig_types?: string[];
   onboarded?: boolean;
+  subscription_tier?: string;
 }
 
 interface AuthContextType {
@@ -15,91 +20,108 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string) => Promise<boolean>;
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+    extras?: { invite_code?: string; profession?: string; gig_types?: string[] }
+  ) => Promise<boolean>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
+  refreshUser: () => Promise<void>;
+  authError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function readError(error: any): string {
+  const detail = error?.response?.data?.detail;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg;
+  return error?.message || 'Something went wrong. Please try again.';
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadUser();
+    (async () => {
+      try {
+        const token = await tokenStorage.get();
+        if (token) {
+          setUser(await api.getMe());
+        }
+      } catch {
+        await tokenStorage.clear();
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, []);
 
-  const loadUser = async () => {
+  const login = useCallback(async (email: string, password: string) => {
+    setAuthError(null);
     try {
-      const storedUser = await AsyncStorage.getItem('taxiq_user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
+      const data = await api.login(email.trim().toLowerCase(), password);
+      await tokenStorage.set(data.access_token);
+      setUser(data.user);
+      return true;
     } catch (error) {
-      console.error('Error loading user:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      // For MVP, simple validation - in production use proper auth
-      if (email && password.length >= 6) {
-        const userData: User = {
-          id: Date.now().toString(),
-          email,
-          name: email.split('@')[0],
-          onboarded: false,
-        };
-        await AsyncStorage.setItem('taxiq_user', JSON.stringify(userData));
-        setUser(userData);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
+      setAuthError(readError(error));
       return false;
     }
-  };
+  }, []);
 
-  const signup = async (email: string, password: string, name: string): Promise<boolean> => {
-    try {
-      if (email && password.length >= 6 && name) {
-        const userData: User = {
-          id: Date.now().toString(),
-          email,
+  const signup = useCallback(
+    async (
+      email: string,
+      password: string,
+      name: string,
+      extras?: { invite_code?: string; profession?: string; gig_types?: string[] }
+    ) => {
+      setAuthError(null);
+      try {
+        const data = await api.register({
+          email: email.trim().toLowerCase(),
+          password,
           name,
-          onboarded: false,
-        };
-        await AsyncStorage.setItem('taxiq_user', JSON.stringify(userData));
-        setUser(userData);
+          ...extras,
+        });
+        await tokenStorage.set(data.access_token);
+        setUser(data.user);
         return true;
+      } catch (error) {
+        setAuthError(readError(error));
+        return false;
       }
-      return false;
-    } catch (error) {
-      console.error('Signup error:', error);
-      return false;
-    }
-  };
+    },
+    []
+  );
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
+    await tokenStorage.clear();
+    setUser(null);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
     try {
-      await AsyncStorage.removeItem('taxiq_user');
-      setUser(null);
-    } catch (error) {
-      console.error('Logout error:', error);
+      setUser(await api.getMe());
+    } catch {
+      /* keep current user on transient failures */
     }
-  };
+  }, []);
 
-  const updateUser = async (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      await AsyncStorage.setItem('taxiq_user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-    }
-  };
+  const updateUser = useCallback(async (userData: Partial<User>) => {
+    const updated = await api.updateMe({
+      name: userData.name,
+      profession: userData.profession ?? undefined,
+      gig_types: userData.gig_types,
+      onboarded: userData.onboarded,
+    });
+    setUser(updated);
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -111,6 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signup,
         logout,
         updateUser,
+        refreshUser,
+        authError,
       }}
     >
       {children}

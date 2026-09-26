@@ -26,6 +26,8 @@ import {
 } from '../src/services/autoTripService';
 import { api } from '../src/services/api';
 
+import { useColors, C } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const IRS_MILEAGE_RATE = 0.70;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MAP_WIDTH = SCREEN_WIDTH - 40;
@@ -69,10 +71,12 @@ const generateMapUrl = (route: RoutePoint[]): string => {
 
 // Simple route visualization component (fallback)
 const SimpleRouteMap = ({ route, style }: { route: RoutePoint[]; style?: any }) => {
+  const c = useColors();
+  const styles = makeStyles(c);
   if (route.length < 2) {
     return (
       <View style={[styles.mapPlaceholder, style]}>
-        <Ionicons name="map-outline" size={40} color="#2A2A35" />
+        <Ionicons name="map-outline" size={40} color={C.border} />
         <Text style={styles.mapPlaceholderText}>Route not available</Text>
       </View>
     );
@@ -145,23 +149,23 @@ const SimpleRouteMap = ({ route, style }: { route: RoutePoint[]; style?: any }) 
         
         {/* Start marker */}
         <View style={[styles.mapMarker, styles.startMarker, { left: startNorm.x - 8, top: startNorm.y - 8 }]}>
-          <Ionicons name="radio-button-on" size={16} color="#00D9A5" />
+          <Ionicons name="radio-button-on" size={16} color={C.accent} />
         </View>
         
         {/* End marker */}
         <View style={[styles.mapMarker, styles.endMarker, { left: endNorm.x - 8, top: endNorm.y - 8 }]}>
-          <Ionicons name="location" size={16} color="#FF6B6B" />
+          <Ionicons name="location" size={16} color={C.danger} />
         </View>
       </View>
       
       {/* Legend */}
       <View style={styles.mapLegend}>
         <View style={styles.legendItem}>
-          <Ionicons name="radio-button-on" size={12} color="#00D9A5" />
+          <Ionicons name="radio-button-on" size={12} color={C.accent} />
           <Text style={styles.legendText}>Start</Text>
         </View>
         <View style={styles.legendItem}>
-          <Ionicons name="location" size={12} color="#FF6B6B" />
+          <Ionicons name="location" size={12} color={C.danger} />
           <Text style={styles.legendText}>End</Text>
         </View>
       </View>
@@ -170,6 +174,8 @@ const SimpleRouteMap = ({ route, style }: { route: RoutePoint[]; style?: any }) 
 };
 
 export default function AutoTripTrackerScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { isEnabled, isTracking, currentTrip, startAutoDetection, stopAutoDetection } = useAutoTripDetection();
   const [pendingTrips, setPendingTrips] = useState<PendingTrip[]>([]);
@@ -312,7 +318,7 @@ export default function AutoTripTrackerScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadTrips(); }} tintColor="#00D9A5" />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadTrips(); }} tintColor={c.accent} />
         }
         showsVerticalScrollIndicator={false}
       >
@@ -320,7 +326,7 @@ export default function AutoTripTrackerScreen() {
         <View style={styles.toggleCard}>
           <View style={styles.toggleInfo}>
             <View style={styles.toggleIconContainer}>
-              <Ionicons name="car" size={24} color="#00D9A5" />
+              <Ionicons name="car" size={24} color={c.accent} />
             </View>
             <View style={styles.toggleText}>
               <Text style={styles.toggleTitle}>Auto-Detect Trips</Text>
@@ -332,14 +338,14 @@ export default function AutoTripTrackerScreen() {
           <Switch
             value={isEnabled}
             onValueChange={handleToggleAutoDetect}
-            trackColor={{ false: '#2A2A35', true: '#00D9A550' }}
-            thumbColor={isEnabled ? '#00D9A5' : '#6B6B7B'}
+            trackColor={{ false: c.border, true: c.accent + '50' }}
+            thumbColor={isEnabled ? c.accent : c.textMuted}
           />
         </View>
 
         {/* Test Trip Button */}
         <TouchableOpacity style={styles.testTripButton} onPress={handleSimulateTrip}>
-          <Ionicons name="flask" size={20} color="#FFB84D" />
+          <Ionicons name="flask" size={20} color={c.warning} />
           <Text style={styles.testTripButtonText}>Create Test Trip (for testing)</Text>
         </TouchableOpacity>
 
@@ -412,7 +418,7 @@ export default function AutoTripTrackerScreen() {
         {/* Empty State */}
         {!loading && pendingTrips.length === 0 && !isTracking && (
           <View style={styles.emptyState}>
-            <Ionicons name="navigate-outline" size={64} color="#2A2A35" />
+            <Ionicons name="navigate-outline" size={64} color={c.border} />
             <Text style={styles.emptyTitle}>No trips detected yet</Text>
             <Text style={styles.emptySubtitle}>
               {isEnabled
@@ -426,15 +432,15 @@ export default function AutoTripTrackerScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>How Auto-Detection Works</Text>
           <View style={styles.infoItem}>
-            <Ionicons name="speedometer" size={16} color="#6B6B7B" />
+            <Ionicons name="speedometer" size={16} color={c.textMuted} />
             <Text style={styles.infoText}>Trip starts when speed exceeds 5 mph</Text>
           </View>
           <View style={styles.infoItem}>
-            <Ionicons name="time" size={16} color="#6B6B7B" />
+            <Ionicons name="time" size={16} color={c.textMuted} />
             <Text style={styles.infoText}>Trip ends after 2 minutes of no movement</Text>
           </View>
           <View style={styles.infoItem}>
-            <Ionicons name="location" size={16} color="#6B6B7B" />
+            <Ionicons name="location" size={16} color={c.textMuted} />
             <Text style={styles.infoText}>Route and distance tracked via GPS</Text>
           </View>
         </View>
@@ -465,6 +471,8 @@ const TripCard = ({
   formatTime,
   formatDate,
 }: TripCardProps) => {
+  const c = useColors();
+  const styles = makeStyles(c);
   const deduction = trip.purpose === 'Business' ? trip.distance * IRS_MILEAGE_RATE : 0;
 
   return (
@@ -485,18 +493,18 @@ const TripCard = ({
         {trip.classified ? (
           <View style={[
             styles.purposeBadge,
-            { backgroundColor: trip.purpose === 'Business' ? '#00D9A520' : '#6B6B7B20' }
+            { backgroundColor: trip.purpose === 'Business' ? c.accent + '20' : c.textMuted + '20' }
           ]}>
             <Text style={[
               styles.purposeBadgeText,
-              { color: trip.purpose === 'Business' ? '#00D9A5' : '#6B6B7B' }
+              { color: trip.purpose === 'Business' ? c.accent : c.textMuted }
             ]}>
               {trip.purpose}
             </Text>
           </View>
         ) : (
           <View style={styles.needsClassifyBadge}>
-            <Ionicons name="help-circle" size={14} color="#FFB84D" />
+            <Ionicons name="help-circle" size={14} color={c.warning} />
             <Text style={styles.needsClassifyText}>Classify</Text>
           </View>
         )}
@@ -522,7 +530,7 @@ const TripCard = ({
           <>
             <View style={styles.tripStatDivider} />
             <View style={styles.tripStat}>
-              <Text style={[styles.tripStatValue, { color: '#00D9A5' }]}>${deduction.toFixed(2)}</Text>
+              <Text style={[styles.tripStatValue, { color: c.accent }]}>${deduction.toFixed(2)}</Text>
               <Text style={styles.tripStatLabel}>deduction</Text>
             </View>
           </>
@@ -532,12 +540,12 @@ const TripCard = ({
       {/* Route */}
       <View style={styles.tripRoute}>
         <View style={styles.routePoint}>
-          <Ionicons name="radio-button-on" size={12} color="#00D9A5" />
+          <Ionicons name="radio-button-on" size={12} color={c.accent} />
           <Text style={styles.routeText} numberOfLines={1}>{trip.startLocation}</Text>
         </View>
         <View style={styles.routeLineSmall} />
         <View style={styles.routePoint}>
-          <Ionicons name="location" size={12} color="#FF6B6B" />
+          <Ionicons name="location" size={12} color={c.danger} />
           <Text style={styles.routeText} numberOfLines={1}>{trip.endLocation}</Text>
         </View>
       </View>
@@ -551,11 +559,11 @@ const TripCard = ({
           {/* Additional Stats */}
           <View style={styles.additionalStats}>
             <View style={styles.additionalStat}>
-              <Ionicons name="speedometer" size={16} color="#6B6B7B" />
+              <Ionicons name="speedometer" size={16} color={c.textMuted} />
               <Text style={styles.additionalStatText}>Max: {trip.maxSpeed.toFixed(0)} mph</Text>
             </View>
             <View style={styles.additionalStat}>
-              <Ionicons name="navigate" size={16} color="#6B6B7B" />
+              <Ionicons name="navigate" size={16} color={c.textMuted} />
               <Text style={styles.additionalStatText}>{trip.route.length} GPS points</Text>
             </View>
           </View>
@@ -584,16 +592,16 @@ const TripCard = ({
 
       {/* Expand indicator */}
       <View style={styles.expandIndicator}>
-        <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color="#6B6B7B" />
+        <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={c.textMuted} />
       </View>
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -603,7 +611,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -618,7 +626,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -632,7 +640,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
@@ -641,12 +649,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   toggleTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
   },
   toggleDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
@@ -654,26 +662,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFB84D20',
+    backgroundColor: c.warning + '20',
     borderWidth: 1,
-    borderColor: '#FFB84D50',
+    borderColor: c.warning + '50',
     borderRadius: 12,
     padding: 14,
     marginBottom: 20,
     gap: 8,
   },
   testTripButtonText: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 14,
     fontWeight: '600',
   },
   currentTripCard: {
-    backgroundColor: '#00D9A515',
+    backgroundColor: c.accent + '15',
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#00D9A530',
+    borderColor: c.accent + '30',
   },
   currentTripHeader: {
     marginBottom: 12,
@@ -687,10 +695,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   liveText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1,
@@ -703,23 +711,23 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   currentTripValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
   },
   currentTripLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
     marginTop: 8,
   },
   tripCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
@@ -732,12 +740,12 @@ const styles = StyleSheet.create({
   },
   tripDateContainer: {},
   tripDate: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
   },
   tripTime: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
@@ -754,13 +762,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#FFB84D20',
+    backgroundColor: c.warning + '20',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
   needsClassifyText: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -774,22 +782,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tripStatValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '700',
   },
   tripStatLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
     marginTop: 2,
   },
   tripStatDivider: {
     width: 1,
     height: 30,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
   },
   tripRoute: {
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
     borderRadius: 10,
     padding: 12,
   },
@@ -801,12 +809,12 @@ const styles = StyleSheet.create({
   routeLineSmall: {
     width: 1,
     height: 12,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     marginLeft: 5,
     marginVertical: 4,
   },
   routeText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     flex: 1,
   },
@@ -814,7 +822,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#2A2A35',
+    borderTopColor: c.border,
   },
   tripMap: {
     marginBottom: 16,
@@ -830,7 +838,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   additionalStatText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
   },
   classifyButtons: {
@@ -842,7 +850,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
@@ -852,13 +860,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6B6B7B',
+    backgroundColor: c.textMuted,
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
   },
   classifyButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -871,26 +879,26 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
     paddingHorizontal: 20,
   },
   infoCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 16,
     marginTop: 20,
   },
   infoTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 12,
@@ -902,13 +910,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   infoText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 13,
   },
   mapContainer: {
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
   },
   mapBackground: {
     width: MAP_WIDTH - 40,
@@ -918,20 +926,20 @@ const styles = StyleSheet.create({
   mapPlaceholder: {
     width: MAP_WIDTH - 40,
     height: MAP_HEIGHT,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   mapPlaceholderText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 8,
   },
   routeLine: {
     position: 'absolute',
     height: 3,
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     transformOrigin: 'left center',
     borderRadius: 1.5,
   },
@@ -949,7 +957,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 20,
     paddingVertical: 8,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
   },
   legendItem: {
     flexDirection: 'row',
@@ -957,7 +965,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   legendText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
   },
 });

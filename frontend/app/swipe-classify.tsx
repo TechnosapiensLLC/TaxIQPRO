@@ -17,6 +17,8 @@ import { useSubscription } from '../src/store/subscriptionStore';
 import { api } from '../src/services/api';
 import { format, isValid, parseISO } from 'date-fns';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const { width, height } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.3;
 
@@ -30,6 +32,8 @@ interface Receipt {
 }
 
 export default function SwipeClassifyScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { checkFeatureAccess, currentTier } = useSubscription();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
@@ -160,7 +164,7 @@ export default function SwipeClassifyScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
           <Text style={styles.loadingText}>Loading receipts...</Text>
         </View>
       </SafeAreaView>
@@ -179,7 +183,7 @@ export default function SwipeClassifyScreen() {
         </View>
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="checkmark-circle" size={64} color="#00D9A5" />
+            <Ionicons name="checkmark-circle" size={64} color={c.accent} />
           </View>
           <Text style={styles.emptyTitle}>All caught up!</Text>
           <Text style={styles.emptySubtitle}>
@@ -207,12 +211,12 @@ export default function SwipeClassifyScreen() {
 
       <View style={styles.instructions}>
         <View style={styles.instructionItem}>
-          <Ionicons name="arrow-back" size={20} color="#FF6B6B" />
+          <Ionicons name="arrow-back" size={20} color={c.danger} />
           <Text style={styles.instructionText}>Personal</Text>
         </View>
         <View style={styles.instructionItem}>
           <Text style={styles.instructionText}>Business</Text>
-          <Ionicons name="arrow-forward" size={20} color="#00D9A5" />
+          <Ionicons name="arrow-forward" size={20} color={c.accent} />
         </View>
       </View>
 
@@ -232,14 +236,14 @@ export default function SwipeClassifyScreen() {
         >
           {/* Business Overlay */}
           <Animated.View style={[styles.overlay, styles.businessOverlay, { opacity: businessOpacity }]}>
-            <Ionicons name="briefcase" size={48} color="#00D9A5" />
+            <Ionicons name="briefcase" size={48} color={c.accent} />
             <Text style={styles.overlayText}>BUSINESS</Text>
           </Animated.View>
 
           {/* Personal Overlay */}
           <Animated.View style={[styles.overlay, styles.personalOverlay, { opacity: personalOpacity }]}>
-            <Ionicons name="person" size={48} color="#FF6B6B" />
-            <Text style={[styles.overlayText, { color: '#FF6B6B' }]}>PERSONAL</Text>
+            <Ionicons name="person" size={48} color={c.danger} />
+            <Text style={[styles.overlayText, { color: c.danger }]}>PERSONAL</Text>
           </Animated.View>
 
           <View style={styles.cardContent}>
@@ -256,14 +260,14 @@ export default function SwipeClassifyScreen() {
 
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.actionButton} onPress={swipeLeft}>
-          <Ionicons name="close-circle" size={32} color="#FF6B6B" />
+          <Ionicons name="close-circle" size={32} color={c.danger} />
           <Text style={styles.actionButtonText}>Personal</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.skipButton} onPress={() => setCurrentIndex((prev) => prev + 1)}>
-          <Ionicons name="refresh" size={24} color="#6B6B7B" />
+          <Ionicons name="refresh" size={24} color={c.textMuted} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={swipeRight}>
-          <Ionicons name="checkmark-circle" size={32} color="#00D9A5" />
+          <Ionicons name="checkmark-circle" size={32} color={c.accent} />
           <Text style={styles.actionButtonText}>Business</Text>
         </TouchableOpacity>
       </View>
@@ -271,10 +275,10 @@ export default function SwipeClassifyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   loadingContainer: {
     flex: 1,
@@ -282,7 +286,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     marginTop: 12,
   },
   header: {
@@ -293,12 +297,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
   counter: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   instructions: {
@@ -313,7 +317,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   instructionText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
   },
   cardContainer: {
@@ -324,11 +328,11 @@ const styles = StyleSheet.create({
   card: {
     width: width - 60,
     height: height * 0.45,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   overlay: {
     position: 'absolute',
@@ -341,13 +345,13 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   businessOverlay: {
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
   },
   personalOverlay: {
-    backgroundColor: '#FF6B6B20',
+    backgroundColor: c.danger + '20',
   },
   overlayText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 28,
     fontWeight: '800',
     marginTop: 12,
@@ -359,32 +363,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryBadge: {
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginBottom: 24,
   },
   categoryText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     fontWeight: '500',
   },
   vendorName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 16,
   },
   receiptAmount: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 48,
     fontWeight: '800',
     marginBottom: 8,
   },
   receiptDate: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 16,
   },
   buttonRow: {
@@ -399,7 +403,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButtonText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -407,7 +411,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -421,31 +425,31 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
   },
   emptyTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 8,
   },
   emptySubtitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 15,
     textAlign: 'center',
   },
   doneButton: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 14,
     marginTop: 32,
   },
   doneButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },

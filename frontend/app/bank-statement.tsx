@@ -15,6 +15,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useSubscription } from '../src/store/subscriptionStore';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 interface ParsedTransaction {
   date: string;
   description: string;
@@ -24,6 +26,8 @@ interface ParsedTransaction {
 }
 
 export default function BankStatementScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const { checkFeatureAccess } = useSubscription();
   const [uploading, setUploading] = useState(false);
@@ -120,7 +124,7 @@ export default function BankStatementScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.processingContainer}>
           <View style={styles.processingIcon}>
-            <ActivityIndicator size="large" color="#00D9A5" />
+            <ActivityIndicator size="large" color={c.accent} />
           </View>
           <Text style={styles.processingTitle}>Analyzing Statement...</Text>
           <Text style={styles.processingText}>
@@ -128,20 +132,20 @@ export default function BankStatementScreen() {
           </Text>
           <View style={styles.processingSteps}>
             <View style={styles.stepItem}>
-              <Ionicons name="checkmark-circle" size={20} color="#00D9A5" />
+              <Ionicons name="checkmark-circle" size={20} color={c.accent} />
               <Text style={styles.stepText}>PDF uploaded successfully</Text>
             </View>
             <View style={styles.stepItem}>
-              <ActivityIndicator size="small" color="#FFB84D" />
+              <ActivityIndicator size="small" color={c.warning} />
               <Text style={styles.stepText}>Extracting transactions...</Text>
             </View>
             <View style={styles.stepItem}>
-              <Ionicons name="ellipse-outline" size={20} color="#6B6B7B" />
-              <Text style={[styles.stepText, { color: '#6B6B7B' }]}>Categorizing expenses</Text>
+              <Ionicons name="ellipse-outline" size={20} color={c.textMuted} />
+              <Text style={[styles.stepText, { color: c.textMuted }]}>Categorizing expenses</Text>
             </View>
             <View style={styles.stepItem}>
-              <Ionicons name="ellipse-outline" size={20} color="#6B6B7B" />
-              <Text style={[styles.stepText, { color: '#6B6B7B' }]}>Identifying deductions</Text>
+              <Ionicons name="ellipse-outline" size={20} color={c.textMuted} />
+              <Text style={[styles.stepText, { color: c.textMuted }]}>Identifying deductions</Text>
             </View>
           </View>
         </View>
@@ -174,12 +178,12 @@ export default function BankStatementScreen() {
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#00D9A5' }]}>{deductible.length}</Text>
+                <Text style={[styles.summaryValue, { color: c.accent }]}>{deductible.length}</Text>
                 <Text style={styles.summaryLabel}>Deductible</Text>
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, { color: '#00D9A5' }]}>${totalDeductible.toFixed(0)}</Text>
+                <Text style={[styles.summaryValue, { color: c.accent }]}>${totalDeductible.toFixed(0)}</Text>
                 <Text style={styles.summaryLabel}>Savings</Text>
               </View>
             </View>
@@ -187,7 +191,7 @@ export default function BankStatementScreen() {
 
           {/* Deductible Section */}
           <Text style={styles.sectionTitle}>
-            <Ionicons name="checkmark-circle" size={18} color="#00D9A5" /> Deductible Expenses
+            <Ionicons name="checkmark-circle" size={18} color={c.accent} /> Deductible Expenses
           </Text>
           {deductible.map((tx, index) => (
             <View key={index} style={styles.transactionCard}>
@@ -201,15 +205,15 @@ export default function BankStatementScreen() {
 
           {/* Non-Deductible Section */}
           <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
-            <Ionicons name="close-circle" size={18} color="#6B6B7B" /> Personal Expenses
+            <Ionicons name="close-circle" size={18} color={c.textMuted} /> Personal Expenses
           </Text>
           {nonDeductible.map((tx, index) => (
             <View key={index} style={[styles.transactionCard, styles.txCardPersonal]}>
               <View style={styles.txInfo}>
-                <Text style={[styles.txDescription, { color: '#6B6B7B' }]}>{tx.description}</Text>
+                <Text style={[styles.txDescription, { color: c.textMuted }]}>{tx.description}</Text>
                 <Text style={styles.txCategory}>{tx.category} • {tx.date}</Text>
               </View>
-              <Text style={[styles.txAmount, { color: '#6B6B7B' }]}>${tx.amount.toFixed(2)}</Text>
+              <Text style={[styles.txAmount, { color: c.textMuted }]}>${tx.amount.toFixed(2)}</Text>
             </View>
           ))}
         </ScrollView>
@@ -237,7 +241,7 @@ export default function BankStatementScreen() {
       <View style={styles.content}>
         <View style={styles.uploadArea}>
           <View style={styles.uploadIcon}>
-            <Ionicons name="document-text" size={48} color="#7C6BFF" />
+            <Ionicons name="document-text" size={48} color={c.accentAlt} />
           </View>
           <Text style={styles.uploadTitle}>Upload Bank Statement</Text>
           <Text style={styles.uploadDescription}>
@@ -265,15 +269,15 @@ export default function BankStatementScreen() {
         {/* Features */}
         <View style={styles.features}>
           <View style={styles.featureItem}>
-            <Ionicons name="flash" size={20} color="#00D9A5" />
+            <Ionicons name="flash" size={20} color={c.accent} />
             <Text style={styles.featureText}>AI-powered extraction</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="pricetag" size={20} color="#00D9A5" />
+            <Ionicons name="pricetag" size={20} color={c.accent} />
             <Text style={styles.featureText}>MCC code intelligence</Text>
           </View>
           <View style={styles.featureItem}>
-            <Ionicons name="shield-checkmark" size={20} color="#00D9A5" />
+            <Ionicons name="shield-checkmark" size={20} color={c.accent} />
             <Text style={styles.featureText}>Encrypted processing</Text>
           </View>
         </View>
@@ -282,10 +286,10 @@ export default function BankStatementScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -295,7 +299,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -305,31 +309,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   uploadArea: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 24,
     padding: 32,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#7C6BFF30',
+    borderColor: c.accentAlt + '30',
     borderStyle: 'dashed',
   },
   uploadIcon: {
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   uploadTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 12,
   },
   uploadDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 22,
@@ -338,19 +342,19 @@ const styles = StyleSheet.create({
   uploadButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 10,
   },
   uploadButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
   supportedFormats: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 16,
   },
@@ -364,7 +368,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   featureText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
   },
   processingContainer: {
@@ -377,19 +381,19 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
   },
   processingTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 12,
   },
   processingText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 32,
@@ -403,7 +407,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   stepText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
   },
   scrollView: {
@@ -413,7 +417,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   summaryCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
@@ -427,20 +431,20 @@ const styles = StyleSheet.create({
   },
   summaryDivider: {
     width: 1,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
   },
   summaryValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 28,
     fontWeight: '700',
   },
   summaryLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 4,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
@@ -448,50 +452,50 @@ const styles = StyleSheet.create({
   transactionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#00D9A5',
+    borderLeftColor: c.accent,
   },
   txCardPersonal: {
-    borderLeftColor: '#6B6B7B',
+    borderLeftColor: c.textMuted,
   },
   txInfo: {
     flex: 1,
   },
   txDescription: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '500',
   },
   txCategory: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 4,
   },
   txAmount: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 16,
     fontWeight: '600',
   },
   bottomBar: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#1A1A22',
+    borderTopColor: c.surfaceAlt,
   },
   importButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
     paddingVertical: 16,
     borderRadius: 14,
     gap: 8,
   },
   importButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 16,
     fontWeight: '600',
   },

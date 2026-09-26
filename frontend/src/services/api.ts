@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { tokenStorage } from './tokenStorage';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://quick-revenue-apps.preview.emergentagent.com';
 
@@ -9,6 +10,14 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 120000, // 120 second timeout for AI operations (PDF parsing takes time)
+});
+
+apiClient.interceptors.request.use(async (config) => {
+  const token = await tokenStorage.get();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export const api = {
@@ -43,6 +52,10 @@ export const api = {
     category: string;
     notes?: string;
     image_base64?: string;
+    is_business?: boolean;
+    store_id?: string;
+    barcode?: string;
+    line_items?: any[];
   }) => {
     const response = await apiClient.post('/receipts', receipt);
     return response.data;
@@ -66,6 +79,7 @@ export const api = {
     purpose: string;
     date: string;
     notes?: string;
+    store_id?: string;
   }) => {
     const response = await apiClient.post('/mileage', mileage);
     return response.data;
@@ -484,6 +498,169 @@ export const api = {
       imported++;
     }
     return { imported, message: `Imported ${imported} expense records` };
+  },
+
+  // ========================================
+  // AUTH
+  // ========================================
+  register: async (body: {
+    email: string;
+    password: string;
+    name: string;
+    gig_types?: string[];
+    profession?: string;
+    invite_code?: string;
+  }) => {
+    const response = await apiClient.post('/auth/register', body);
+    return response.data;
+  },
+
+  login: async (email: string, password: string) => {
+    const response = await apiClient.post('/auth/login', { email, password });
+    return response.data;
+  },
+
+  getMe: async () => {
+    const response = await apiClient.get('/auth/me');
+    return response.data;
+  },
+
+  updateMe: async (updates: {
+    name?: string;
+    profession?: string;
+    gig_types?: string[];
+    onboarded?: boolean;
+  }) => {
+    const response = await apiClient.patch('/auth/me', updates);
+    return response.data;
+  },
+
+  // ========================================
+  // EXPORTS
+  // ========================================
+  getTurboTaxPreview: async (params: { year?: number; scope?: string } = {}) => {
+    const response = await apiClient.get('/export/turbotax', { params });
+    return response.data;
+  },
+
+  getCpaPackagePreview: async (params: { year?: number; scope?: string } = {}) => {
+    const response = await apiClient.get('/export/cpa-package', { params });
+    return response.data;
+  },
+
+  getAccountingFormats: async () => {
+    const response = await apiClient.get('/export/accounting/formats');
+    return response.data;
+  },
+
+  getCoaMapping: async () => {
+    const response = await apiClient.get('/export/coa-mapping');
+    return response.data;
+  },
+
+  saveCoaMapping: async (mapping: Record<string, string>) => {
+    const response = await apiClient.put('/export/coa-mapping', { mapping });
+    return response.data;
+  },
+
+  // ========================================
+  // ORGANIZATION (STORE CHAIN)
+  // ========================================
+  getMyOrg: async () => {
+    const response = await apiClient.get('/org/me');
+    return response.data;
+  },
+
+  createOrg: async (name: string) => {
+    const response = await apiClient.post('/org', { name });
+    return response.data;
+  },
+
+  getStores: async () => {
+    const response = await apiClient.get('/org/stores');
+    return response.data;
+  },
+
+  createStore: async (body: { name: string; address?: string; store_number?: string }) => {
+    const response = await apiClient.post('/org/stores', body);
+    return response.data;
+  },
+
+  getMembers: async () => {
+    const response = await apiClient.get('/org/members');
+    return response.data;
+  },
+
+  updateMember: async (
+    memberId: string,
+    updates: { role?: string; store_id?: string; disabled?: boolean }
+  ) => {
+    const response = await apiClient.patch(`/org/members/${memberId}`, updates);
+    return response.data;
+  },
+
+  getInvites: async () => {
+    const response = await apiClient.get('/org/invites');
+    return response.data;
+  },
+
+  createInvite: async (body: { role: string; store_id?: string; email?: string }) => {
+    const response = await apiClient.post('/org/invites', body);
+    return response.data;
+  },
+
+  getOrgSummary: async (params: { store_id?: string; year?: number } = {}) => {
+    const response = await apiClient.get('/org/reports/summary', { params });
+    return response.data;
+  },
+
+  createServiceToken: async (serviceName: string) => {
+    const response = await apiClient.post('/org/service-token', {
+      service_name: serviceName,
+    });
+    return response.data;
+  },
+
+  // ========================================
+  // QUICKBOOKS ONLINE
+  // ========================================
+  getQboStatus: async () => {
+    const response = await apiClient.get('/qbo/status');
+    return response.data;
+  },
+
+  getQboAuthUrl: async (platform: 'web' | 'native') => {
+    const response = await apiClient.get('/qbo/authorize', { params: { platform } });
+    return response.data;
+  },
+
+  disconnectQbo: async () => {
+    const response = await apiClient.delete('/qbo/disconnect');
+    return response.data;
+  },
+
+  getQboAccounts: async (accountType?: string) => {
+    const response = await apiClient.get('/qbo/accounts', {
+      params: accountType ? { account_type: accountType } : {},
+    });
+    return response.data;
+  },
+
+  syncToQbo: async (body: {
+    clearing_account_id: string;
+    expense_account_id?: string;
+    income_account_id?: string;
+    year?: number;
+    scope?: string;
+    dry_run?: boolean;
+  }) => {
+    const response = await apiClient.post('/qbo/sync', body);
+    return response.data;
+  },
+
+  getQboSyncLog: async () => {
+    const response = await apiClient.get('/qbo/sync-log');
+    return response.data;
   },
 };
 

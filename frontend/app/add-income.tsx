@@ -16,6 +16,8 @@ import { useRouter } from 'expo-router';
 import { api } from '../src/services/api';
 import { format } from 'date-fns';
 
+import { useColors, C } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 const PLATFORMS = [
   { id: 'Uber', icon: 'car', color: '#000000' },
   { id: 'Lyft', icon: 'car', color: '#FF00BF' },
@@ -31,10 +33,12 @@ const PLATFORMS = [
   { id: 'Airbnb', icon: 'home', color: '#FF5A5F' },
   { id: 'Turo', icon: 'car-sport', color: '#4B2D84' },
   { id: 'Etsy', icon: 'storefront', color: '#F56400' },
-  { id: 'Other', icon: 'cash', color: '#6B6B7B' },
+  { id: 'Other', icon: 'cash', color: C.textMuted },
 ];
 
 export default function AddIncomeScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [source, setSource] = useState('');
   const [amount, setAmount] = useState('');
@@ -103,7 +107,7 @@ export default function AddIncomeScreen() {
             <TouchableOpacity
               style={[
                 styles.platformSelector,
-                source && { borderColor: '#00D9A530' },
+                source && { borderColor: c.accent + '30' },
               ]}
               onPress={() => setShowPlatforms(!showPlatforms)}
             >
@@ -112,7 +116,7 @@ export default function AddIncomeScreen() {
                   <Ionicons
                     name={selectedPlatform?.icon as any}
                     size={24}
-                    color="#00D9A5"
+                    color={c.accent}
                   />
                   <Text style={styles.selectedPlatformText}>{source}</Text>
                 </View>
@@ -122,7 +126,7 @@ export default function AddIncomeScreen() {
               <Ionicons
                 name={showPlatforms ? 'chevron-up' : 'chevron-down'}
                 size={20}
-                color="#6B6B7B"
+                color={c.textMuted}
               />
             </TouchableOpacity>
 
@@ -143,7 +147,7 @@ export default function AddIncomeScreen() {
                     <Ionicons
                       name={platform.icon as any}
                       size={22}
-                      color={source === platform.id ? '#00D9A5' : '#6B6B7B'}
+                      color={source === platform.id ? c.accent : c.textMuted}
                     />
                     <Text
                       style={[
@@ -170,7 +174,7 @@ export default function AddIncomeScreen() {
                 value={amount}
                 onChangeText={setAmount}
                 placeholder="0.00"
-                placeholderTextColor="#4A4A5A"
+                placeholderTextColor={c.borderStrong}
                 keyboardType="decimal-pad"
               />
             </View>
@@ -184,7 +188,7 @@ export default function AddIncomeScreen() {
               value={date}
               onChangeText={setDate}
               placeholder="YYYY-MM-DD"
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
             />
           </View>
 
@@ -224,7 +228,7 @@ export default function AddIncomeScreen() {
               value={description}
               onChangeText={setDescription}
               placeholder="e.g., Weekly earnings, tips, bonuses"
-              placeholderTextColor="#4A4A5A"
+              placeholderTextColor={c.borderStrong}
               multiline
               numberOfLines={2}
               textAlignVertical="top"
@@ -233,7 +237,7 @@ export default function AddIncomeScreen() {
 
           {/* Tax Info */}
           <View style={styles.taxInfo}>
-            <Ionicons name="information-circle" size={18} color="#FFB84D" />
+            <Ionicons name="information-circle" size={18} color={c.warning} />
             <Text style={styles.taxInfoText}>
               Gig income over $600 is typically reported on 1099-K or 1099-NEC forms
             </Text>
@@ -244,10 +248,10 @@ export default function AddIncomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -256,15 +260,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A22',
+    borderBottomColor: c.surfaceAlt,
   },
   headerTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '600',
   },
   saveText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -278,32 +282,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   platformSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   platformPlaceholder: {
-    color: '#4A4A5A',
+    color: c.borderStrong,
     fontSize: 16,
   },
   selectedPlatform: {
@@ -312,7 +316,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   selectedPlatformText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '500',
   },
@@ -321,45 +325,45 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
     marginTop: 12,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   platformOption: {
     width: '31%',
     alignItems: 'center',
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 8,
   },
   platformOptionSelected: {
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     borderWidth: 1,
-    borderColor: '#00D9A550',
+    borderColor: c.accent + '50',
   },
   platformOptionText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
     marginTop: 6,
     textAlign: 'center',
   },
   platformOptionTextSelected: {
-    color: '#00D9A5',
+    color: c.accent,
     fontWeight: '500',
   },
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   currencySymbol: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 24,
     fontWeight: '600',
     paddingLeft: 16,
@@ -374,22 +378,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderColor: c.border,
   },
   toggleInfo: {
     flex: 1,
   },
   toggleTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '500',
   },
   toggleDescription: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 2,
   },
@@ -397,18 +401,18 @@ const styles = StyleSheet.create({
     width: 50,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     justifyContent: 'center',
     padding: 2,
   },
   toggleActive: {
-    backgroundColor: '#00D9A5',
+    backgroundColor: c.accent,
   },
   toggleKnob: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: c.text,
   },
   toggleKnobActive: {
     alignSelf: 'flex-end',
@@ -420,13 +424,13 @@ const styles = StyleSheet.create({
   taxInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FFB84D10',
+    backgroundColor: c.warning + '10',
     borderRadius: 12,
     padding: 14,
     gap: 10,
   },
   taxInfoText: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 13,
     flex: 1,
     lineHeight: 20,

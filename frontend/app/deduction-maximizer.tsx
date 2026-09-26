@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 interface MissingDeduction {
   name: string;
   description: string;
@@ -41,6 +43,8 @@ interface AnalysisResult {
 }
 
 export default function DeductionMaximizerScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -80,9 +84,9 @@ export default function DeductionMaximizerScreen() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#00D9A5';
-    if (score >= 60) return '#FFB84D';
-    return '#FF6B6B';
+    if (score >= 80) return c.accent;
+    if (score >= 60) return c.warning;
+    return c.danger;
   };
 
   const getProfessionLabel = (profession: string) => {
@@ -99,7 +103,7 @@ export default function DeductionMaximizerScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00D9A5" />
+          <ActivityIndicator size="large" color={c.accent} />
           <Text style={styles.loadingText}>Analyzing your deductions...</Text>
         </View>
       </SafeAreaView>
@@ -110,7 +114,7 @@ export default function DeductionMaximizerScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={48} color="#FF6B6B" />
+          <Ionicons name="alert-circle" size={48} color={c.danger} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadAnalysis}>
             <Text style={styles.retryText}>Try Again</Text>
@@ -125,11 +129,11 @@ export default function DeductionMaximizerScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Deduction Maximizer</Text>
         <View style={styles.headerBadge}>
-          <Ionicons name="trending-up" size={14} color="#00D9A5" />
+          <Ionicons name="trending-up" size={14} color={c.accent} />
         </View>
       </View>
 
@@ -138,7 +142,7 @@ export default function DeductionMaximizerScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00D9A5" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.accent} />
         }
       >
         {/* Deduction Health Score */}
@@ -159,7 +163,7 @@ export default function DeductionMaximizerScreen() {
                 : 'You may be missing significant deductions'}
             </Text>
             <View style={styles.professionBadge}>
-              <Ionicons name="briefcase" size={14} color="#7C6BFF" />
+              <Ionicons name="briefcase" size={14} color={c.accentAlt} />
               <Text style={styles.professionText}>
                 {getProfessionLabel(analysis?.profession_detected || 'general')}
               </Text>
@@ -182,21 +186,21 @@ export default function DeductionMaximizerScreen() {
           </View>
           <View style={styles.deductionBreakdown}>
             <View style={styles.breakdownItem}>
-              <Ionicons name="receipt" size={18} color="#7C6BFF" />
+              <Ionicons name="receipt" size={18} color={c.accentAlt} />
               <Text style={styles.breakdownLabel}>Expenses</Text>
               <Text style={styles.breakdownValue}>
                 {formatCurrency(analysis?.current_deductions?.expenses || 0)}
               </Text>
             </View>
             <View style={styles.breakdownItem}>
-              <Ionicons name="car" size={18} color="#00D9A5" />
+              <Ionicons name="car" size={18} color={c.accent} />
               <Text style={styles.breakdownLabel}>Mileage</Text>
               <Text style={styles.breakdownValue}>
                 {formatCurrency(analysis?.current_deductions?.mileage || 0)}
               </Text>
             </View>
             <View style={[styles.breakdownItem, styles.breakdownTotal]}>
-              <Ionicons name="calculator" size={18} color="#FFB84D" />
+              <Ionicons name="calculator" size={18} color={c.warning} />
               <Text style={styles.breakdownLabel}>Total</Text>
               <Text style={[styles.breakdownValue, styles.totalValue]}>
                 {formatCurrency(analysis?.current_deductions?.total || 0)}
@@ -246,7 +250,7 @@ export default function DeductionMaximizerScreen() {
             <Text style={styles.sectionTitle}>Pro Tips</Text>
             {analysis.tips.map((tip, index) => (
               <View key={index} style={styles.tipCard}>
-                <Ionicons name="bulb" size={20} color="#FFB84D" />
+                <Ionicons name="bulb" size={20} color={c.warning} />
                 <Text style={styles.tipText}>{tip}</Text>
               </View>
             ))}
@@ -256,12 +260,12 @@ export default function DeductionMaximizerScreen() {
         {/* Quick Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Ionicons name="receipt-outline" size={24} color="#7C6BFF" />
+            <Ionicons name="receipt-outline" size={24} color={c.accentAlt} />
             <Text style={styles.statValue}>{analysis?.receipts_count || 0}</Text>
             <Text style={styles.statLabel}>Receipts</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="car-outline" size={24} color="#00D9A5" />
+            <Ionicons name="car-outline" size={24} color={c.accent} />
             <Text style={styles.statValue}>{analysis?.trips_count || 0}</Text>
             <Text style={styles.statLabel}>Trips</Text>
           </View>
@@ -273,14 +277,14 @@ export default function DeductionMaximizerScreen() {
             style={styles.actionButton}
             onPress={() => router.push('/add-receipt')}
           >
-            <Ionicons name="add-circle" size={20} color="#FFFFFF" />
+            <Ionicons name="add-circle" size={20} color={c.text} />
             <Text style={styles.actionButtonText}>Add Receipt</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.actionButton, styles.actionButtonSecondary]}
             onPress={() => router.push('/add-mileage')}
           >
-            <Ionicons name="car" size={20} color="#00D9A5" />
+            <Ionicons name="car" size={20} color={c.accent} />
             <Text style={[styles.actionButtonText, styles.actionButtonTextSecondary]}>Add Mileage</Text>
           </TouchableOpacity>
         </View>
@@ -289,10 +293,10 @@ export default function DeductionMaximizerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -305,13 +309,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     flex: 1,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '700',
   },
@@ -319,7 +323,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -336,7 +340,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     marginTop: 16,
   },
@@ -347,26 +351,26 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#FF6B6B',
+    color: c.danger,
     fontSize: 16,
     marginTop: 12,
     textAlign: 'center',
   },
   retryButton: {
     marginTop: 20,
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 10,
   },
   retryText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
   },
   // Score Card
   scoreCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 20,
     flexDirection: 'row',
@@ -377,7 +381,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
@@ -387,7 +391,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   scoreLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 10,
     fontWeight: '600',
   },
@@ -396,12 +400,12 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   scoreTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 17,
     fontWeight: '700',
   },
   scoreSubtitle: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
     marginTop: 4,
     lineHeight: 18,
@@ -409,7 +413,7 @@ const styles = StyleSheet.create({
   professionBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
@@ -418,19 +422,19 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   professionText: {
-    color: '#7C6BFF',
+    color: c.accentAlt,
     fontSize: 12,
     fontWeight: '600',
   },
   // Summary Card
   summaryCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 16,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 12,
@@ -444,17 +448,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginBottom: 4,
   },
   summaryValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '700',
   },
   deductionBreakdown: {
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 10,
     padding: 12,
   },
@@ -466,22 +470,22 @@ const styles = StyleSheet.create({
   },
   breakdownLabel: {
     flex: 1,
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 14,
   },
   breakdownValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
   },
   breakdownTotal: {
     borderTopWidth: 1,
-    borderTopColor: '#2A2A35',
+    borderTopColor: c.border,
     marginTop: 4,
     paddingTop: 12,
   },
   totalValue: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -496,23 +500,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   savingsBadge: {
-    backgroundColor: '#00D9A520',
+    backgroundColor: c.accent + '20',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
   },
   savingsText: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 11,
     fontWeight: '600',
   },
   deductionCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
     borderLeftWidth: 3,
-    borderLeftColor: '#FF6B6B',
+    borderLeftColor: c.danger,
   },
   deductionHeader: {
     flexDirection: 'row',
@@ -521,18 +525,18 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   deductionName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
     flex: 1,
   },
   deductionPotential: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 14,
     fontWeight: '700',
   },
   deductionDesc: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 10,
@@ -543,18 +547,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryBadge: {
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
   },
   categoryText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
     fontWeight: '500',
   },
   trackedText: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
   },
   // Tips
@@ -562,7 +566,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tipCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 10,
     padding: 14,
     flexDirection: 'row',
@@ -572,7 +576,7 @@ const styles = StyleSheet.create({
   },
   tipText: {
     flex: 1,
-    color: '#DDDDDD',
+    color: c.textSecondary,
     fontSize: 13,
     lineHeight: 19,
   },
@@ -584,19 +588,19 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
   statValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 24,
     fontWeight: '700',
     marginTop: 8,
   },
   statLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginTop: 4,
   },
@@ -610,7 +614,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
@@ -618,14 +622,14 @@ const styles = StyleSheet.create({
   actionButtonSecondary: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#00D9A5',
+    borderColor: c.accent,
   },
   actionButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 14,
     fontWeight: '600',
   },
   actionButtonTextSecondary: {
-    color: '#00D9A5',
+    color: c.accent,
   },
 });

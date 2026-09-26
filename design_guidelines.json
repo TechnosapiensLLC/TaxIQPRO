@@ -1,0 +1,95 @@
+{
+  "app_name": "TaxIQ Pro",
+  "personality": "1 iOS-Native Clean",
+  "personality_one_liner": "A deeply trustworthy, clear, and focused financial tool that feels native, premium, and sophisticated without relying on generic black dark modes.",
+  "color": {
+    "surface": "#F7F7F5",
+    "onSurface": "#1C1D1A",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#1C1D1A",
+    "surfaceTertiary": "#EDEDE8",
+    "onSurfaceTertiary": "#3E4540",
+    "surfaceInverse": "#151917",
+    "onSurfaceInverse": "#F7F7F5",
+    "brand": "#286C56",
+    "onBrand": "#FFFFFF",
+    "brandPrimary": "#286C56",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#C9E2D8",
+    "onBrandSecondary": "#151917",
+    "brandTertiary": "#E3F1EB",
+    "onBrandTertiary": "#1A4537",
+    "success": "#287A5B",
+    "onSuccess": "#FFFFFF",
+    "warning": "#9F7618",
+    "onWarning": "#FFFFFF",
+    "error": "#9E3636",
+    "onError": "#FFFFFF",
+    "info": "#5B6763",
+    "onInfo": "#FFFFFF",
+    "border": "#E3E5E0",
+    "borderStrong": "#B5BCB7",
+    "divider": "#E3E5E0",
+    "muted": "#747C78"
+  },
+  "typography": {
+    "displayFontFamily": "Plus Jakarta Sans",
+    "textFontFamily": "Plus Jakarta Sans",
+    "scale": { "sm": 12, "base": 14, "lg": 16, "xl": 20, "2xl": 24 }
+  },
+  "spacing": { 
+    "rule": "Generous spacing. Cards must not be flush to edges. Desktop views use multi-column grids (max width 1200px, 2-col cards).",
+    "xs": 4, "sm": 8, "md": 12, "lg": 16, "xl": 24, "2xl": 32, "3xl": 48 
+  },
+  "radius_tokens": { "sm": 6, "md": 12, "lg": 20, "pill": 999 },
+  "shadow_tier": "1",
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": "true",
+    "do's": ["Bottom tab bar", "Sticky header backgrounds", "Bottom-sheet handles", "Floating action buttons"],
+    "dont's": ["Body content", "List rows", "Form inputs"]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    { 
+      "name": "Dashboard", 
+      "purpose": "A rich snapshot of financial health with instant actions for gig and C-store users.", 
+      "states": { 
+        "loading": "Skeleton cards with subtle pulse in iOS style.", 
+        "empty": "Illustration of a neat desk, 'No data yet', and 'Scan First Receipt' CTA.", 
+        "error": "Card with 'Failed to load data' and a subtle 'Retry' button." 
+      }, 
+      "layout": "Desktop: 2-column masonry or grid (max-width 1200px center-aligned). Mobile: Stacked cards with safe area margins. Top section uses a soft gradient background (brand palette) behind a hero KPI card."
+    }
+  ],
+  "images": {
+    "dashboard_hero_bg": {
+      "url": "https://images.unsplash.com/photo-1617957718645-7680362d6312?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMG1pbmltYWwlMjBncmVlbiUyMGdyYWRpZW50JTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3OTAzOTg0MTV8MA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1708549566274-638eb2d2108b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTV8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMG1pbmltYWwlMjBkYXJrJTIwb2xpdmUlMjBncmFkaWVudCUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzkwMzk4NDE1fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Abstract minimal deep sage gradient background for the dashboard hero"
+    }
+  },
+  "instructions_to_main_agent": [
+    "MANDATORY: Use `/app/frontend/src/theme.ts` for the central theme implementation and hook.",
+    "MANDATORY: No blue, navy, indigo, or purple. No generic '#0A0A0F' black. Use the provided Deep Sage and Slate palette.",
+    "MANDATORY: Make layouts responsive for desktop as requested by the user. On wide screens, switch list views to 2-column grids (max-width: 1200px).",
+    "MANDATORY: Migration - Replace old #0A0A0F with background.app, #14141A with background.surface, #00D9A5 with brand.primary. Map old data-viz colors to the new chart[0..5] array.",
+    "MANDATORY: Ensure dark mode background is NOT black. Use #151917 (Deep Forest Slate) for background.app.",
+    "MANDATORY: 'Personal vs Business' prompt should be a bottom sheet or modal on receipt scan.",
+    "MANDATORY: Use Phosphor icons consistently. For TurboTax/Quickbooks integrations, use standard logos or initial fallbacks (TB, QB) if SVG logos are not available.",
+    "MANDATORY: Use 'JetBrains Mono' for numeric tracking (KPIs, miles, amounts) and 'Plus Jakarta Sans' for standard UI body.",
+    "MANDATORY: Always apply 'iOS-Native Clean' design rules - use generous padding, soft corners (md/lg), and clear typography hierarchy."
+  ]
+}

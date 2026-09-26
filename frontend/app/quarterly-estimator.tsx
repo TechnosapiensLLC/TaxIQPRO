@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { api } from '../src/services/api';
 
+import { useColors } from '../src/context/ThemeContext';
+import type { Palette } from '../src/theme';
 interface QuarterSchedule {
   quarter: string;
   period: string;
@@ -53,6 +55,8 @@ interface EstimateResult {
 }
 
 export default function QuarterlyEstimatorScreen() {
+  const c = useColors();
+  const styles = makeStyles(c);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -98,16 +102,16 @@ export default function QuarterlyEstimatorScreen() {
   };
 
   const getQuarterStatus = (quarter: QuarterSchedule) => {
-    if (quarter.is_past) return { color: '#6B6B7B', icon: 'checkmark-circle', label: 'Past' };
-    if (quarter.is_current) return { color: '#FFB84D', icon: 'time', label: 'Current' };
-    return { color: '#00D9A5', icon: 'calendar', label: 'Upcoming' };
+    if (quarter.is_past) return { color: c.textMuted, icon: 'checkmark-circle', label: 'Past' };
+    if (quarter.is_current) return { color: c.warning, icon: 'time', label: 'Current' };
+    return { color: c.accent, icon: 'calendar', label: 'Upcoming' };
   };
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#7C6BFF" />
+          <ActivityIndicator size="large" color={c.accentAlt} />
           <Text style={styles.loadingText}>Calculating your estimates...</Text>
         </View>
       </SafeAreaView>
@@ -118,7 +122,7 @@ export default function QuarterlyEstimatorScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={48} color="#FF6B6B" />
+          <Ionicons name="alert-circle" size={48} color={c.danger} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadEstimate}>
             <Text style={styles.retryText}>Try Again</Text>
@@ -136,11 +140,11 @@ export default function QuarterlyEstimatorScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={c.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Quarterly Estimator</Text>
         <View style={styles.headerBadge}>
-          <Ionicons name="calculator" size={14} color="#7C6BFF" />
+          <Ionicons name="calculator" size={14} color={c.accentAlt} />
         </View>
       </View>
 
@@ -149,7 +153,7 @@ export default function QuarterlyEstimatorScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C6BFF" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={c.accentAlt} />
         }
       >
         {/* Main Payment Card */}
@@ -160,7 +164,7 @@ export default function QuarterlyEstimatorScreen() {
           </Text>
           {currentQuarter && (
             <View style={styles.dueDateBadge}>
-              <Ionicons name="calendar" size={14} color="#FFB84D" />
+              <Ionicons name="calendar" size={14} color={c.warning} />
               <Text style={styles.dueDateText}>
                 {currentQuarter.days_until_due > 0
                   ? `Due in ${currentQuarter.days_until_due} days`
@@ -183,7 +187,7 @@ export default function QuarterlyEstimatorScreen() {
             <Ionicons 
               name={showBreakdown ? 'chevron-up' : 'chevron-down'} 
               size={20} 
-              color="#6B6B7B" 
+              color={c.textMuted} 
             />
           </TouchableOpacity>
           
@@ -316,7 +320,7 @@ export default function QuarterlyEstimatorScreen() {
           <Text style={styles.sectionTitle}>Tax Tips</Text>
           {estimate?.tips?.map((tip, index) => (
             <View key={index} style={styles.tipCard}>
-              <Ionicons name="information-circle" size={18} color="#7C6BFF" />
+              <Ionicons name="information-circle" size={18} color={c.accentAlt} />
               <Text style={styles.tipText}>{tip}</Text>
             </View>
           ))}
@@ -324,7 +328,7 @@ export default function QuarterlyEstimatorScreen() {
 
         {/* Safe Harbor Note */}
         <View style={styles.safeHarborCard}>
-          <Ionicons name="shield-checkmark" size={24} color="#00D9A5" />
+          <Ionicons name="shield-checkmark" size={24} color={c.accent} />
           <View style={styles.safeHarborContent}>
             <Text style={styles.safeHarborTitle}>Safe Harbor Payment</Text>
             <Text style={styles.safeHarborText}>
@@ -338,7 +342,7 @@ export default function QuarterlyEstimatorScreen() {
           style={styles.reminderButton}
           onPress={() => router.push('/notifications')}
         >
-          <Ionicons name="notifications" size={20} color="#FFFFFF" />
+          <Ionicons name="notifications" size={20} color={c.text} />
           <Text style={styles.reminderButtonText}>Set Payment Reminders</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -346,10 +350,10 @@ export default function QuarterlyEstimatorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0F',
+    backgroundColor: c.bg,
   },
   header: {
     flexDirection: 'row',
@@ -362,13 +366,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     flex: 1,
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 20,
     fontWeight: '700',
   },
@@ -376,7 +380,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#7C6BFF20',
+    backgroundColor: c.accentAlt + '20',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -393,7 +397,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     marginTop: 16,
   },
@@ -404,39 +408,39 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#FF6B6B',
+    color: c.danger,
     fontSize: 16,
     marginTop: 12,
     textAlign: 'center',
   },
   retryButton: {
     marginTop: 20,
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 10,
   },
   retryText: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
   },
   // Payment Card
   paymentCard: {
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     marginBottom: 20,
   },
   paymentLabel: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     opacity: 0.9,
     marginBottom: 8,
   },
   paymentAmount: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 42,
     fontWeight: '800',
     marginBottom: 12,
@@ -451,19 +455,19 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   dueDateText: {
-    color: '#FFB84D',
+    color: c.warning,
     fontSize: 13,
     fontWeight: '600',
   },
   annualNote: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 12,
     opacity: 0.7,
     marginTop: 12,
   },
   // Summary
   summaryCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -475,7 +479,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -488,20 +492,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   gridLabel: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     marginBottom: 4,
   },
   gridValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 18,
     fontWeight: '700',
   },
   incomeValue: {
-    color: '#00D9A5',
+    color: c.accent,
   },
   deductionValue: {
-    color: '#FF6B6B',
+    color: c.danger,
   },
   // Full Breakdown
   fullBreakdown: {
@@ -509,11 +513,11 @@ const styles = StyleSheet.create({
   },
   breakdownDivider: {
     height: 1,
-    backgroundColor: '#2A2A35',
+    backgroundColor: c.border,
     marginVertical: 12,
   },
   breakdownTitle: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 12,
@@ -525,28 +529,28 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   breakdownRowHighlight: {
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     marginHorizontal: -8,
     paddingHorizontal: 8,
     borderRadius: 8,
     marginTop: 8,
   },
   breakdownLabel: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
   },
   breakdownValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     fontWeight: '500',
   },
   highlightValue: {
-    color: '#FFB84D',
+    color: c.warning,
     fontWeight: '700',
   },
   taxBreakdown: {
     marginTop: 16,
-    backgroundColor: '#1A1A22',
+    backgroundColor: c.surfaceAlt,
     borderRadius: 10,
     padding: 12,
   },
@@ -556,27 +560,27 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   taxLabel: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 13,
   },
   taxValue: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 13,
     fontWeight: '500',
   },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: '#2A2A35',
+    borderTopColor: c.border,
     marginTop: 8,
     paddingTop: 12,
   },
   totalLabel: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 14,
     fontWeight: '600',
   },
   totalValue: {
-    color: '#FF6B6B',
+    color: c.danger,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -585,7 +589,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   quarterCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 12,
     padding: 14,
     flexDirection: 'row',
@@ -595,7 +599,7 @@ const styles = StyleSheet.create({
   },
   currentQuarterCard: {
     borderWidth: 1,
-    borderColor: '#FFB84D',
+    borderColor: c.warning,
   },
   quarterLeft: {
     flexDirection: 'row',
@@ -610,12 +614,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quarterName: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 15,
     fontWeight: '600',
   },
   quarterPeriod: {
-    color: '#6B6B7B',
+    color: c.textMuted,
     fontSize: 11,
     marginTop: 2,
   },
@@ -623,7 +627,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   quarterAmount: {
-    color: '#FFFFFF',
+    color: c.text,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -636,7 +640,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   tipCard: {
-    backgroundColor: '#14141A',
+    backgroundColor: c.surface,
     borderRadius: 10,
     padding: 12,
     flexDirection: 'row',
@@ -646,13 +650,13 @@ const styles = StyleSheet.create({
   },
   tipText: {
     flex: 1,
-    color: '#DDDDDD',
+    color: c.textSecondary,
     fontSize: 13,
     lineHeight: 18,
   },
   // Safe Harbor
   safeHarborCard: {
-    backgroundColor: '#00D9A515',
+    backgroundColor: c.accent + '15',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -660,25 +664,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 12,
     borderWidth: 1,
-    borderColor: '#00D9A530',
+    borderColor: c.accent + '30',
   },
   safeHarborContent: {
     flex: 1,
   },
   safeHarborTitle: {
-    color: '#00D9A5',
+    color: c.accent,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   safeHarborText: {
-    color: '#8A8A9A',
+    color: c.textTertiary,
     fontSize: 12,
     lineHeight: 18,
   },
   // Reminder Button
   reminderButton: {
-    backgroundColor: '#7C6BFF',
+    backgroundColor: c.accentAlt,
     borderRadius: 12,
     paddingVertical: 16,
     flexDirection: 'row',
@@ -687,7 +691,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   reminderButtonText: {
-    color: '#FFFFFF',
+    color: c.onPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
