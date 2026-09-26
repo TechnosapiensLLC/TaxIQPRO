@@ -2028,6 +2028,218 @@ async def get_quarterly_estimate():
         ]
     }
 
+# ===============================================
+# TURBOTAX EXPORT FEATURE
+# ===============================================
+
+@app.get("/api/export/turbotax")
+async def export_for_turbotax():
+    """
+    Generate TurboTax-compatible export data.
+    TurboTax Self-Employed can import CSV files with specific format.
+    This exports all income, expenses, and mileage in a format compatible with TurboTax.
+    """
+    # Get all data
+    receipts = await db.receipts.find().to_list(length=1000)
+    mileage_entries = await db.mileage.find().to_list(length=1000)
+    income_entries = await db.income.find().to_list(length=1000)
+    
+    # Calculate totals
+    total_income = sum(i.get("amount", 0) for i in income_entries)
+    total_expenses = sum(r.get("amount", 0) for r in receipts if r.get("is_deductible", False))
+    total_mileage = sum(m.get("distance_miles", 0) for m in mileage_entries)
+    total_mileage_deduction = sum(m.get("deduction_amount", 0) for m in mileage_entries)
+    
+    # Categorize expenses for Schedule C
+    expense_categories = {}
+    for receipt in receipts:
+        if receipt.get("is_deductible", False):
+            category = receipt.get("category", "Other")
+            expense_categories[category] = expense_categories.get(category, 0) + receipt.get("amount", 0)
+    
+    # Map our categories to Schedule C lines
+    schedule_c_mapping = {
+        "Vehicle & Gas": "Car and truck expenses (Line 9)",
+        "Maintenance & Repairs": "Repairs and maintenance (Line 21)",
+        "Phone & Internet": "Utilities (Line 25)",
+        "Office Supplies": "Office expense (Line 18)",
+        "Equipment & Supplies": "Supplies (Line 22)",
+        "Software & Subscriptions": "Other expenses (Line 27a)",
+        "Professional Services": "Legal and professional services (Line 17)",
+        "Insurance": "Insurance (other than health) (Line 15)",
+        "Parking & Tolls": "Car and truck expenses (Line 9)",
+        "Education & Training": "Other expenses (Line 27a)",
+        "Meals": "Meals (50% deductible) (Line 24b)",
+        "Travel": "Travel (Line 24a)",
+        "Advertising": "Advertising (Line 8)",
+        "Bank Fees": "Other expenses (Line 27a)",
+        "Other": "Other expenses (Line 27a)",
+    }
+    
+    # Build Schedule C data
+    schedule_c_lines = {}
+    for category, amount in expense_categories.items():
+        line = schedule_c_mapping.get(category, "Other expenses (Line 27a)")
+        schedule_c_lines[line] = schedule_c_lines.get(line, 0) + amount
+    
+    # Add mileage to car expenses
+    if total_mileage_deduction > 0:
+        car_line = "Car and truck expenses (Line 9)"
+        schedule_c_lines[car_line] = schedule_c_lines.get(car_line, 0) + total_mileage_deduction
+    
+    # Build income data by source
+    income_by_source = {}
+    for income in income_entries:
+        source = income.get("source", "Other")
+        income_by_source[source] = income_by_source.get(source, 0) + income.get("amount", 0)
+    
+    # Generate CSV-compatible data for TurboTax import
+    csv_expenses = []
+    for receipt in receipts:
+        if receipt.get("is_deductible", False):
+            csv_expenses.append({
+                "Date": receipt.get("date", "").split("T")[0] if receipt.get("date") else "",
+                "Description": receipt.get("vendor", ""),
+                "Category": receipt.get("category", "Other"),
+                "Amount": round(receipt.get("amount", 0), 2),
+                "Schedule_C_Line": schedule_c_mapping.get(receipt.get("category", "Other"), "Line 27a"),
+            })
+    
+    csv_mileage = []
+    for trip in mileage_entries:
+        csv_mileage.append({
+            "Date": trip.get("date", "").split("T")[0] if trip.get("date") else "",
+            "From": trip.get("start_location", ""),
+            "To": trip.get("end_location", ""),
+            "Miles": round(trip.get("distance_miles", 0), 1),
+            "Purpose": trip.get("purpose", "Business"),
+            "Deduction": round(trip.get("deduction_amount", 0), 2),
+        })
+    
+    csv_income = []
+    for inc in income_entries:
+        csv_income.append({
+            "Date": inc.get("date", "").split("T")[0] if inc.get("date") else "",
+            "Source": inc.get("source", ""),
+            "Amount": round(inc.get("amount", 0), 2),
+            "Is_1099": inc.get("is_1099", True),
+            "Platform": inc.get("platform", ""),
+        })
+    
+    return {
+        "export_format": "TurboTax Self-Employed Compatible",
+        "tax_year": str(datetime.now().year),
+        "generated_at": datetime.now().isoformat(),
+        "summary": {
+            "total_gross_income": round(total_income, 2),
+            "total_expenses": round(total_expenses, 2),
+            "total_mileage_miles": round(total_mileage, 1),
+            "total_mileage_deduction": round(total_mileage_deduction, 2),
+            "net_profit": round(total_income - total_expenses - total_mileage_deduction, 2),
+        },
+        "schedule_c_lines": {k: round(v, 2) for k, v in schedule_c_lines.items()},
+        "income_by_source": {k: round(v, 2) for k, v in income_by_source.items()},
+        "csv_data": {
+            "expenses": csv_expenses,
+            "mileage": csv_mileage,
+            "income": csv_income,
+        },
+        "instructions": [
+            "1. Open TurboTax Self-Employed",
+            "2. Go to 'Self-Employment' section",
+            "3. Use the Schedule C line totals below to fill in your deductions",
+            "4. Import mileage using the CSV data or enter the total miles",
+            "5. Enter each 1099 income source separately",
+            "6. Keep this export and your receipts for your records (7 years)"
+        ],
+        "disclaimer": "This export is for informational purposes. Verify all amounts with your tax professional before filing."
+    }
+
+
+@app.get("/api/export/cpa-package")
+async def export_for_cpa():
+    """
+    Generate comprehensive CPA package with all tax documentation.
+    """
+    # Get all data
+    receipts = await db.receipts.find().to_list(length=1000)
+    mileage_entries = await db.mileage.find().to_list(length=1000)
+    income_entries = await db.income.find().to_list(length=1000)
+    
+    # Calculate totals
+    total_income = sum(i.get("amount", 0) for i in income_entries)
+    total_expenses = sum(r.get("amount", 0) for r in receipts if r.get("is_deductible", False))
+    total_mileage = sum(m.get("distance_miles", 0) for m in mileage_entries)
+    total_mileage_deduction = sum(m.get("deduction_amount", 0) for m in mileage_entries)
+    
+    # Organize expenses by category
+    expenses_by_category = {}
+    for receipt in receipts:
+        if receipt.get("is_deductible", False):
+            category = receipt.get("category", "Other")
+            if category not in expenses_by_category:
+                expenses_by_category[category] = []
+            expenses_by_category[category].append({
+                "date": receipt.get("date", "").split("T")[0] if receipt.get("date") else "",
+                "vendor": receipt.get("vendor", ""),
+                "amount": round(receipt.get("amount", 0), 2),
+                "notes": receipt.get("notes", ""),
+            })
+    
+    # Organize income by source
+    income_by_source = {}
+    for inc in income_entries:
+        source = inc.get("source", "Other")
+        if source not in income_by_source:
+            income_by_source[source] = []
+        income_by_source[source].append({
+            "date": inc.get("date", "").split("T")[0] if inc.get("date") else "",
+            "amount": round(inc.get("amount", 0), 2),
+            "is_1099": inc.get("is_1099", True),
+            "platform": inc.get("platform", ""),
+        })
+    
+    # Build mileage log
+    mileage_log = []
+    for trip in mileage_entries:
+        mileage_log.append({
+            "date": trip.get("date", "").split("T")[0] if trip.get("date") else "",
+            "from": trip.get("start_location", ""),
+            "to": trip.get("end_location", ""),
+            "miles": round(trip.get("distance_miles", 0), 1),
+            "purpose": trip.get("purpose", "Business"),
+            "deduction": round(trip.get("deduction_amount", 0), 2),
+        })
+    
+    return {
+        "package_type": "CPA Tax Documentation Package",
+        "tax_year": str(datetime.now().year),
+        "generated_at": datetime.now().isoformat(),
+        "client_summary": {
+            "total_gross_income": round(total_income, 2),
+            "total_deductible_expenses": round(total_expenses, 2),
+            "total_business_miles": round(total_mileage, 1),
+            "mileage_deduction": round(total_mileage_deduction, 2),
+            "total_deductions": round(total_expenses + total_mileage_deduction, 2),
+            "estimated_net_profit": round(total_income - total_expenses - total_mileage_deduction, 2),
+        },
+        "income_detail": income_by_source,
+        "expense_detail": expenses_by_category,
+        "mileage_log": mileage_log,
+        "category_totals": {
+            cat: round(sum(r["amount"] for r in receipts_list), 2)
+            for cat, receipts_list in expenses_by_category.items()
+        },
+        "notes_for_cpa": [
+            "All receipts are categorized and available with images upon request.",
+            "Mileage log includes start/end locations and business purpose for each trip.",
+            "Income includes 1099 status for each source.",
+            "Please verify all totals against client's 1099 forms.",
+            "Contact client for any clarification or missing documentation."
+        ],
+        "disclaimer": "This package is prepared for tax preparation purposes. The CPA should verify all amounts."
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
